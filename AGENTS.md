@@ -438,7 +438,7 @@ PackageVersion: 0.1.0
 PackageLocale: en-US
 Publisher: Your Name
 PackageName: Pair-In Quick CLI
-License: MIT
+License: GPL v3
 ShortDescription: P2P file transfer companion
 InstallModes:
   - interactive
@@ -821,7 +821,7 @@ qshare receive ABC123
 
 [Диаграмма из резюме]
 
-## Limitations
+## LiGPL v3ations
 
 - Max file size: 50 MB
 - Code expires in 5 minutes
@@ -832,7 +832,7 @@ qshare receive ABC123
 [Инструкции для signaling сервера]
 
 ## License
-MIT
+GPL v3
 ```
 
 **5.2 Публикация CLI**
@@ -911,7 +911,7 @@ export const SIGNALING_URL = process.env.SIGNALING_URL
 - [ ] TTL кодов соблюдается (5 минут)
 - [ ] Ошибки обрабатываются с понятными сообщениями
 - [ ] README содержит все инструкции
-- [ ] LICENSE добавлен (MIT)
+- [ ] LICENSE добавлен (GPL v3)
 - [ ] STUN/TURN серверы настроены
 - [ ] Тестирование на 3+ устройствах пройдено
 
