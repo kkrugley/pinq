@@ -821,7 +821,7 @@ qshare receive ABC123
 
 [Диаграмма из резюме]
 
-## LiGPL v3ations
+## Limitations
 
 - Max file size: 50 MB
 - Code expires in 5 minutes
@@ -926,5 +926,4 @@ export const SIGNALING_URL = process.env.SIGNALING_URL
 - [ ] Homebrew/Winget публикация
 - [ ] Мониторинг и аналитика (опционально)
 
-***
 
