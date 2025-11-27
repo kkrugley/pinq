@@ -103,4 +103,4 @@ Update signaling endpoints in client code as needed:
 3. Submit a PR with a clear description of changes and testing performed.
 
 ## License
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+This project is licensed under the GPL v3 License. See [LICENSE](LICENSE) for details.
