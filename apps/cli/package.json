@@ -1,0 +1,12 @@
+{
+  "name": "@pinq/cli",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "bin": "dist/index.js",
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput",
+    "build": "tsc --project tsconfig.json",
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@pinq/signaling",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput",
+    "build": "tsc --project tsconfig.json",
+    "test": "node --test"
+  }
+}
