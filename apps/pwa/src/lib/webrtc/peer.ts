@@ -30,7 +30,7 @@ export class WebRTCSender {
     return peer;
   }
 
-  async connect(onStatus?: (status: string) => void, timeoutMs = 15000): Promise<void> {
+  async connect(onStatus?: (status: string) => void, timeoutMs = 30000): Promise<void> {
     if (!this.connectionPromise) {
       this.connectionPromise = (async () => {
         onStatus?.('Warming up signaling...');

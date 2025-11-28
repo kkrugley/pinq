@@ -20,7 +20,7 @@ export class SignalingClient {
     }
   }
 
-  async connect(timeoutMs = 10000): Promise<void> {
+  async connect(timeoutMs = 30000): Promise<void> {
     if (this.socket?.connected) return;
 
     await new Promise<void>((resolve, reject) => {

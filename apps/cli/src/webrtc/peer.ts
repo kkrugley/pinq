@@ -61,7 +61,7 @@ export class WebRTCReceiver extends EventEmitter {
     }
   }
 
-  async start(timeoutMs = 15000) {
+  async start(timeoutMs = 30000) {
     const ready = new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error('Timed out waiting for peer connection'));
@@ -81,7 +81,7 @@ export class WebRTCReceiver extends EventEmitter {
     return ready;
   }
 
-  waitForMetadata(timeoutMs = 15000) {
+  waitForMetadata(timeoutMs = 30000) {
     if (this.metadata) return Promise.resolve(this.metadata);
 
     return new Promise<Metadata>((resolve, reject) => {

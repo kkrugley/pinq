@@ -24,7 +24,7 @@ export class SignalingClient extends EventEmitter {
     this.socket.on('room-expired', (payload) => this.emit('room-expired', payload));
   }
 
-  async connect(timeoutMs = 10000) {
+  async connect(timeoutMs = 30000) {
     if (this.socket.connected) return;
 
     const connectionPromise = new Promise<void>((resolve, reject) => {
@@ -51,7 +51,7 @@ export class SignalingClient extends EventEmitter {
     return connectionPromise;
   }
 
-  async join(code: string, timeoutMs = 10000) {
+  async join(code: string, timeoutMs = 30000) {
     const normalized = code.trim().toUpperCase();
     await this.connect(timeoutMs);
 
