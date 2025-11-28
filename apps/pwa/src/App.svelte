@@ -235,7 +235,7 @@
         </button>
         <a
           class="text-sm text-slate-400"
-          href="https://github.com/your-org/pinq"
+          href="https://github.com/kkrugley/pinq"
           target="_blank"
           rel="noreferrer"
         >
