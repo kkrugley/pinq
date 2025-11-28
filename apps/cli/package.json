@@ -1,12 +1,40 @@
 {
-  "name": "@pinq/cli",
-  "version": "0.0.1",
-  "private": true,
+  "name": "pinq-cli",
+  "version": "0.1.0",
+  "description": "Pair-In Quick CLI for receiving files and text via WebRTC",
   "type": "module",
-  "bin": "dist/index.js",
-  "scripts": {
-    "dev": "tsc --watch --preserveWatchOutput",
-    "build": "tsc --project tsconfig.json",
-    "test": "node --test"
+  "license": "GPL-3.0-or-later",
+    "bin": {
+      "pinq": "./dist/index.js"
+    },
+    "scripts": {
+      "dev": "tsc --watch --preserveWatchOutput",
+      "build": "tsc --project tsconfig.json",
+      "test": "node --test",
+      "lint": "tsc --noEmit",
+      "typecheck": "tsc --noEmit"
+    },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "webrtc",
+    "p2p",
+    "file-transfer",
+    "cli",
+    "pair-in-quick"
+  ],
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "cli-progress": "^3.12.0",
+    "commander": "^11.0.0",
+    "ora": "^7.0.0",
+    "simple-peer": "^9.11.1",
+    "socket.io-client": "^4.7.0",
+    "wrtc": "^0.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.3",
+    "typescript": "^5.5.4"
   }
 }

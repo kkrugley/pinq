@@ -4,7 +4,9 @@
     "rootDir": "src",
     "outDir": "dist",
     "moduleResolution": "Node",
-    "types": ["node"]
+    "types": ["node"],
+    "noEmit": false,
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]

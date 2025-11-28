@@ -19,7 +19,7 @@ Pair-In Quick enables direct peer-to-peer transfer of files and text from a mobi
 
 2. **User Experience**
    - PWA: Simple UI with file/text selection and pairing code display
-   - CLI: Single command `qshare receive ABC123` with progress indicators
+   - CLI: Single command `pinq receive ABC123` with progress indicators
    - Auto-save files to ~/Downloads, display text in console
    - Pre-warming for Render.com cold starts
 
@@ -281,7 +281,7 @@ apps/cli/
     "wrtc": "^0.4.7"
   },
   "bin": {
-    "qshare": "./dist/index.js"
+    "pinq": "./dist/index.js"
   }
 }
 ```
@@ -290,9 +290,9 @@ apps/cli/
 
 **Использование:**
 ```bash
-qshare receive ABC123
+pinq receive ABC123
 # или
-qshare receive ABC123 --path ~/Desktop --confirm
+pinq receive ABC123 --path ~/Desktop --confirm
 ```
 
 **Флаги:**
@@ -405,7 +405,7 @@ if (metadata.type === 'file') {
   "name": "pinq-cli",
   "version": "0.1.0",
   "bin": {
-    "qshare": "./dist/index.js"
+    "pinq": "./dist/index.js"
   },
   "files": ["dist"],
   "keywords": ["webrtc", "p2p", "file-transfer", "cli"]
@@ -445,7 +445,7 @@ InstallModes:
 Installers:
   - Architecture: x64
     InstallerType: portable
-    InstallerUrl: https://github.com/.../qshare-win.exe
+    InstallerUrl: https://github.com/.../pinq-win.exe
 ```
 
 ***
@@ -663,14 +663,14 @@ export function generateCode(): string {
   "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "/icons/icon-192.svg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/svg+xml"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icons/icon-512.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ]
 }
@@ -739,21 +739,21 @@ export default {
 
 1. **Отправка текста (пароль):**
    - PWA: ввести "MyPassword123" → получить код ABC123
-   - CLI: `qshare receive ABC123`
+   - CLI: `pinq receive ABC123`
    - Проверка: текст отображается в консоли
 
 2. **Отправка маленького файла (<1MB):**
    - PWA: выбрать image.jpg (500 KB) → код DEF456
-   - CLI: `qshare receive DEF456`
+   - CLI: `pinq receive DEF456`
    - Проверка: файл в ~/Downloads/image.jpg
 
 3. **Отправка большого файла (10-50 MB):**
    - PWA: выбрать video.mp4 (25 MB) → код GHI789
-   - CLI: `qshare receive GHI789`
+   - CLI: `pinq receive GHI789`
    - Проверка: прогресс-бар, файл успешно сохранен
 
 4. **Неверный код:**
-   - CLI: `qshare receive WRONG1`
+   - CLI: `pinq receive WRONG1`
    - Проверка: ошибка "Room not found" через 30 секунд
 
 5. **Разрыв соединения:**
@@ -762,7 +762,7 @@ export default {
 
 6. **Холодный старт Render.com:**
    - Подождать 20 минут (signaling заснет)
-   - CLI: `qshare receive ABC123`
+   - CLI: `pinq receive ABC123`
    - Проверка: pre-warming + успешное подключение
 
 **4.2 Тестирование на разных платформах**
@@ -803,14 +803,14 @@ P2P file and text transfer between phone and computer without cloud services.
 ## Quick Start
 
 ### On Phone
-1. Open https://qshare.app
+1. Open https://pinq.app
 2. Choose text or file
 3. Get pairing code (e.g., ABC123)
 
 ### On Computer
 ```
 npm install -g pinq-cli
-qshare receive ABC123
+pinq receive ABC123
 ```
 
 ## Installation
@@ -875,7 +875,7 @@ brew install pinq
 1. Подключить GitHub репозиторий
 2. Выбрать apps/pwa как root
 3. Auto-deploy при push в main
-4. Настроить домен: qshare.app (опционально)
+4. Настроить домен: pinq.app (опционально)
 
 **5.4 Обновление конфигурации**
 

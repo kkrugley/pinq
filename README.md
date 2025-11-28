@@ -63,14 +63,14 @@ Run these from the repository root:
 
 ## Basic Usage
 1. Start the signaling server (locally or use the Render URL).
-2. Run the CLI on your computer:
+2. Install the CLI globally (or run via `pnpm --filter cli build && node apps/cli/dist/index.js`).
+3. Run the CLI on your computer with the pairing code from the PWA:
    ```bash
-   pnpm --filter cli start receive ABC123
+   pinq receive ABC123
    ```
-   Replace `ABC123` with the pairing code shown in the PWA.
-3. Open the PWA on your phone (local dev server or deployed URL).
-4. Enter/select a pairing code, choose text or a file (<50 MB), and send.
-5. The CLI displays text in the terminal and saves files to `~/Downloads` with progress for larger payloads.
+4. Open the PWA on your phone (local dev server or deployed URL).
+5. Enter/select a pairing code, choose text or a file (<50 MB), and send.
+6. The CLI displays text in the terminal and saves files to `~/Downloads` with progress for larger payloads.
 
 ## Deployment
 ### Signaling Server on Render
@@ -101,6 +101,19 @@ Update signaling endpoints in client code as needed:
 1. Fork the repo and create a feature branch.
 2. Run lint/type-check before opening a PR.
 3. Submit a PR with a clear description of changes and testing performed.
+
+### If PR creation is blocked
+Some hosting providers restrict opening PRs through the UI. You can still share your changes:
+1. Create patches locally:
+   ```bash
+   git format-patch origin/main..HEAD -o /tmp/pinq-patches
+   ```
+2. Upload or share the generated `.patch` files (e.g., via email or an issue attachment).
+3. The maintainer can apply them with:
+   ```bash
+   git am /tmp/pinq-patches/*.patch
+   ```
+This workflow avoids UI limits while preserving authorship and commit history.
 
 ## License
 This project is licensed under the GPL v3 License. See [LICENSE](LICENSE) for details.
