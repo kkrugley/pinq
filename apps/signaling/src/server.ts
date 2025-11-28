@@ -14,12 +14,27 @@ export interface SignalingServerOptions {
   allowedOrigin?: string;
 }
 
+function parseAllowedOrigins(raw?: string | string[]) {
+  if (!raw) return '*';
+  if (Array.isArray(raw)) return raw;
+  if (raw.trim() === '*') return '*';
+  const parts = raw
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return parts.length ? parts : '*';
+}
+
 export function createSignalingServer(options: SignalingServerOptions = {}) {
+  const allowedOrigins = parseAllowedOrigins(
+    options.allowedOrigin || process.env.ALLOWED_ORIGINS || process.env.ALLOWED_ORIGIN || '*',
+  );
+
   const app = express();
   const server = http.createServer(app);
   const io = new Server(server, {
     cors: {
-      origin: options.allowedOrigin || process.env.ALLOWED_ORIGIN || '*',
+      origin: allowedOrigins,
       methods: ['GET', 'POST'],
     },
   });
@@ -106,7 +121,7 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
     socket.on('disconnect', () => handleDisconnect(socket));
   });
 
-  app.use(cors({ origin: options.allowedOrigin || process.env.ALLOWED_ORIGIN || '*' }));
+  app.use(cors({ origin: allowedOrigins }));
   app.use(express.json());
 
   app.get('/health', (_req, res) => {
