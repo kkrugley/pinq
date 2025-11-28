@@ -45,14 +45,20 @@
   onDestroy(() => sender?.destroy());
 
   async function ensureSender() {
-    sender?.destroy();
-    sender = new WebRTCSender(SIGNALING_URL, pairingCode);
-    await sender.connect((status) => {
-      statusMessage = status;
-      statusTone = status.toLowerCase().includes('error') ? 'error' : 'idle';
-    });
-    statusTone = 'success';
-    statusMessage = 'Connected. Ready to transfer.';
+    try {
+      sender?.destroy();
+      sender = new WebRTCSender(SIGNALING_URL, pairingCode);
+      await sender.connect((status) => {
+        statusMessage = status;
+        statusTone = status.toLowerCase().includes('error') ? 'error' : 'idle';
+      });
+      statusTone = 'success';
+      statusMessage = 'Connected. Ready to transfer.';
+    } catch (err) {
+      statusTone = 'error';
+      statusMessage = 'Ошибка подключения';
+      throw err;
+    }
   }
 
   async function sendText() {
