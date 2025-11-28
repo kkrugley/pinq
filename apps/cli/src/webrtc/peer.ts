@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import SimplePeer, { SignalData } from 'simple-peer';
-import wrtc from 'wrtc';
+import wrtc from '@roamhq/wrtc';
 import { Metadata } from '../types.js';
 import { SignalingClient } from './signaling.js';
 
@@ -54,7 +54,7 @@ export class WebRTCReceiver extends EventEmitter {
         // eslint-disable-next-line no-console
         console.log('[webrtc] data channel open');
       });
-      this.peer.on('iceStateChange', (state) => {
+      this.peer.on('iceStateChange', (state: string) => {
         // eslint-disable-next-line no-console
         console.log(`[webrtc] ICE state: ${state}`);
       });

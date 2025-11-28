@@ -48,7 +48,7 @@ Pair-In Quick enables direct peer-to-peer transfer of files and text from a mobi
 ### CLI (apps/cli/)
 - **Runtime:** Node.js (cross-platform)
 - **CLI framework:** Commander.js
-- **WebRTC:** simple-peer + wrtc (for Node.js)
+- **WebRTC:** simple-peer + @roamhq/wrtc (for Node.js)
 - **UI:** chalk, ora, cli-progress
 - **Signaling:** socket.io-client
 
@@ -278,7 +278,7 @@ apps/cli/
     "chalk": "^5.3.0",
     "ora": "^7.0.0",
     "cli-progress": "^3.12.0",
-    "wrtc": "^0.4.7"
+    "@roamhq/wrtc": "^0.9.1"
   },
   "bin": {
     "pinq": "./dist/index.js"
@@ -925,5 +925,4 @@ export const SIGNALING_URL = process.env.SIGNALING_URL
 - [ ] Dark mode в PWA
 - [ ] Homebrew/Winget публикация
 - [ ] Мониторинг и аналитика (опционально)
-
 

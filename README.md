@@ -12,7 +12,7 @@ Pair-In Quick is a peer-to-peer (P2P) data transfer tool that makes it easy to s
 Pair-In Quick is organized as a pnpm workspace with three core apps:
 
 - **Signaling Server (`apps/signaling/`):** Node.js + Socket.io service that brokers session setup (SDP/ICE) and pairing codes but never handles file contents. Suitable for Render.com deployment.
-- **CLI (`apps/cli/`):** Node.js tool (Commander.js + simple-peer + wrtc) that joins a pairing session, receives files to `~/Downloads`, and prints incoming text.
+- **CLI (`apps/cli/`):** Node.js tool (Commander.js + simple-peer + @roamhq/wrtc) that joins a pairing session, receives files to `~/Downloads`, and prints incoming text.
 - **PWA (`apps/pwa/`):** Svelte + Tailwind + Vite web client (simple-peer + socket.io-client) that runs in the browser to select files or text, generate/display the pairing code, and transfer to the desktop.
 
 Key protocol highlights:

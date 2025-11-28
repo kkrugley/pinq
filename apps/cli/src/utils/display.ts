@@ -20,12 +20,15 @@ export function createSpinner(text: string, verbose?: boolean) {
 }
 
 export function createProgressBar(total: number) {
-  return new cliProgress.SingleBar(
+  const bar = new cliProgress.SingleBar(
     {
       format: 'Receiving |{bar}| {percentage}% | {value}/{total} bytes',
     },
     cliProgress.Presets.shades_classic,
-  ).start(total, 0);
+  );
+
+  bar.start(total, 0);
+  return bar;
 }
 
 export function formatBytes(bytes?: number) {

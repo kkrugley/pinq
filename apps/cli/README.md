@@ -41,7 +41,7 @@ pinq receive ABC123 --verbose
 ```bash
 pnpm install
 pnpm --filter cli build   # compile to dist/
-pnpm --filter cli test    # run Node.js tests (wrtc required)
+pnpm --filter cli test    # run Node.js tests (@roamhq/wrtc required)
 ```
 
 ## Protocol
