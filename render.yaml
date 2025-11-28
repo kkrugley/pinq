@@ -2,7 +2,7 @@ services:
   - type: web
     name: pinq-signaling
     env: node
-    buildCommand: pnpm install --filter @pinq/signaling --prod && pnpm build --filter @pinq/signaling
+    buildCommand: pnpm install --filter @pinq/signaling... --prod=false && pnpm --filter @pinq/signaling run build
     startCommand: node apps/signaling/dist/index.js
     envVars:
       - key: NODE_ENV
