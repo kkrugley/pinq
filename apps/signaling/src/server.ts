@@ -15,14 +15,25 @@ export interface SignalingServerOptions {
 }
 
 function parseAllowedOrigins(raw?: string | string[]) {
-  if (!raw) return '*';
-  if (Array.isArray(raw)) return raw;
+  const defaults = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:4173',
+    'http://127.0.0.1:4173',
+    'https://pinq.vercel.app',
+    'https://pinq.app',
+  ];
+
+  if (!raw) return [...defaults];
+  if (Array.isArray(raw)) return Array.from(new Set([...raw, ...defaults]));
   if (raw.trim() === '*') return '*';
+
   const parts = raw
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
-  return parts.length ? parts : '*';
+
+  return parts.length ? Array.from(new Set([...parts, ...defaults])) : [...defaults];
 }
 
 export function createSignalingServer(options: SignalingServerOptions = {}) {
@@ -121,7 +132,13 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
     socket.on('disconnect', () => handleDisconnect(socket));
   });
 
-  app.use(cors({ origin: allowedOrigins }));
+  const corsOptions = {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'OPTIONS'],
+  };
+
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
   app.use(express.json());
 
   app.get('/health', (_req, res) => {
