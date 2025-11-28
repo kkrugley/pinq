@@ -8,7 +8,7 @@ const program = new Command();
 program
   .name('pinq')
   .description('Pair-In Quick CLI for receiving text and files via WebRTC')
-  .version('0.0.1');
+  .version('0.1.0');
 
 program
   .command('receive')

@@ -74,14 +74,15 @@ Run these from the repository root:
 
 ## Deployment
 ### Signaling Server on Render
-1. Create a new Web Service from this repo and set the root to `apps/signaling`.
-2. Configure the start command (e.g., `pnpm start`) and automatic deploys from `main`.
-3. Note the Render URL (e.g., `https://pinq-signaling.onrender.com`) for clients.
+1. Create a new Web Service from this repo (root can stay at `/` when using `render.yaml`, or `apps/signaling` if configuring manually).
+2. Environment: `PORT=3000`, `NODE_ENV=production`, `ALLOWED_ORIGIN=<your PWA domain>`.
+3. Build/start (if manual): `pnpm install && pnpm build --filter @pinq/signaling`, start `node apps/signaling/dist/index.js`.
+4. Note the Render URL (e.g., `https://pinq-signaling.onrender.com`) for clients.
 
 ### PWA on Vercel
 1. Import the repo into Vercel and set the project root to `apps/pwa`.
-2. Configure build command `pnpm build` and output directory as Vite’s default (`dist`).
-3. Set environment variables for the signaling URL if needed and deploy; add a custom domain if desired.
+2. Configure build command `pnpm build` and output directory `dist`.
+3. Set env `VITE_SIGNALING_URL=https://pinq-signaling.onrender.com` (or your self-hosted URL); add a custom domain if desired.
 
 ### CLI Publishing
 - **npm:**
@@ -94,8 +95,8 @@ Run these from the repository root:
 
 ## Configuration
 Update signaling endpoints in client code as needed:
-- **PWA:** `apps/pwa/src/lib/config.ts` should point to the Render URL in production and localhost in development.
-- **CLI:** `apps/cli/src/config.ts` can read `SIGNALING_URL` from the environment with a default Render URL.
+- **PWA:** `apps/pwa/src/lib/config.ts` respects `VITE_SIGNALING_URL` (build-time) and defaults to localhost in dev.
+- **CLI:** `apps/cli/src/config.ts` reads `SIGNALING_URL` with fallback to the hosted URL; `DOWNLOAD_DIR` can override the save path.
 
 ## Contribution Guide
 1. Fork the repo and create a feature branch.

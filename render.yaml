@@ -9,3 +9,5 @@ services:
         value: production
       - key: PORT
         value: 3000
+      - key: ALLOWED_ORIGIN
+        value: https://pinq.app
