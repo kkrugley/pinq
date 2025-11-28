@@ -4,16 +4,16 @@
   "description": "Pair-In Quick CLI for receiving files and text via WebRTC",
   "type": "module",
   "license": "GPL-3.0-or-later",
-    "bin": {
-      "pinq": "./dist/index.js"
-    },
-    "scripts": {
-      "dev": "tsc --watch --preserveWatchOutput",
-      "build": "tsc --project tsconfig.json",
-      "test": "node --test",
-      "lint": "tsc --noEmit",
-      "typecheck": "tsc --noEmit"
-    },
+  "bin": {
+    "pinq": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput",
+    "build": "tsc --project tsconfig.json",
+    "test": "node --test",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
   "files": [
     "dist"
   ],
@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.5.3",
+    "node-pre-gyp": "^0.17.0",
     "typescript": "^5.5.4"
   }
 }
