@@ -33,15 +33,15 @@ pinq receive ABC123 --verbose
 - `--verbose`: Print signaling/WebRTC debug output
 
 ### Environment Variables
-- `SIGNALING_URL`: Override the signaling server URL (default: `https://pinq-signaling.onrender.com`)
+- `SIGNALING_URL`: Override the signaling server URL (default: `https://pinq.onrender.com`)
 - `DOWNLOAD_DIR`: Override the default download directory for all runs
 
 ## Development
 
 ```bash
 pnpm install
-pnpm --filter cli build   # compile to dist/
-pnpm --filter cli test    # run Node.js tests (@roamhq/wrtc required)
+pnpm --filter pinq-cli build   # compile to dist/
+pnpm --filter pinq-cli test    # run Node.js tests (@roamhq/wrtc required)
 ```
 
 ## Protocol

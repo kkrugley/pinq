@@ -32,7 +32,7 @@ npm install -g pnpm
 ## Installation
 Clone the repository and install workspace dependencies with pnpm:
 ```bash
-git clone https://github.com/your-org/pinq.git
+git clone https://github.com/kkrugley/pinq.git
 cd pinq
 pnpm install
 ```
@@ -63,7 +63,7 @@ Run these from the repository root:
 
 ## Basic Usage
 1. Start the signaling server (locally or use the Render URL).
-2. Install the CLI globally (or run via `pnpm --filter cli build && node apps/cli/dist/index.js`).
+2. Install the CLI globally (or run via `pnpm --filter pinq-cli build && node apps/cli/dist/index.js`).
 3. Run the CLI on your computer with the pairing code from the PWA:
    ```bash
    pinq receive ABC123
@@ -77,12 +77,12 @@ Run these from the repository root:
 1. Create a new Web Service from this repo (root can stay at `/` when using `render.yaml`, or `apps/signaling` if configuring manually).
 2. Environment: `PORT=3000`, `NODE_ENV=production`, `ALLOWED_ORIGIN=<your PWA domain>`.
 3. Build/start (if manual): `pnpm install && pnpm build --filter @pinq/signaling`, start `node apps/signaling/dist/index.js`.
-4. Note the Render URL (e.g., `https://pinq-signaling.onrender.com`) for clients.
+4. Note the Render URL (e.g., `https://pinq.onrender.com`) for clients.
 
 ### PWA on Vercel
 1. Import the repo into Vercel and set the project root to `apps/pwa`.
 2. Configure build command `pnpm build` and output directory `dist`.
-3. Set env `VITE_SIGNALING_URL=https://pinq-signaling.onrender.com` (or your self-hosted URL); add a custom domain if desired.
+3. Set env `VITE_SIGNALING_URL=https://pinq.onrender.com` (or your self-hosted URL); add a custom domain if desired.
 
 ### CLI Publishing
 - **npm:**

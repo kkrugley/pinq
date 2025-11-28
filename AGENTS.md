@@ -5,9 +5,9 @@ You are an expert full-stack developer specializing in WebRTC, P2P file transfer
 ## Project Overview
 
 Pair-In Quick enables direct peer-to-peer transfer of files and text from a mobile phone to guest computers using:
-- **PWA** (Svelte + Tailwind) deployed on Vercel
+- **PWA** (Svelte + Tailwind) deployed on Vercel (https://pinq.vercel.app/)
 - **CLI app** (Node.js) distributed via npm/Homebrew/Winget
-- **Signaling server** (Node.js + Socket.io) hosted on Render.com
+- **Signaling server** (Node.js + Socket.io) hosted on Free-tier Render.com (https://pinq.onrender.com)
 - **WebRTC DataChannel** for P2P transfer with STUN/TURN servers
 
 ## Core Requirements
@@ -869,7 +869,7 @@ brew install pinq
 1. Подключить GitHub репозиторий
 2. Выбрать apps/signaling
 3. Auto-deploy при push в main
-4. Получить URL: https://pinq-signaling.onrender.com
+4. Получить URL: https://pinq.onrender.com
 
 **PWA на Vercel:**
 1. Подключить GitHub репозиторий
@@ -883,7 +883,7 @@ brew install pinq
 ```typescript
 // apps/pwa/src/lib/config.ts
 export const SIGNALING_URL = import.meta.env.PROD
-  ? 'https://pinq-signaling.onrender.com'
+  ? 'https://pinq.onrender.com'
   : 'http://localhost:3000';
 ```
 
@@ -891,7 +891,7 @@ export const SIGNALING_URL = import.meta.env.PROD
 ```typescript
 // apps/cli/src/config.ts
 export const SIGNALING_URL = process.env.SIGNALING_URL
-  || 'https://pinq-signaling.onrender.com';
+  || 'https://pinq.onrender.com';
 ```
 
 ***
@@ -925,4 +925,3 @@ export const SIGNALING_URL = process.env.SIGNALING_URL
 - [ ] Dark mode в PWA
 - [ ] Homebrew/Winget публикация
 - [ ] Мониторинг и аналитика (опционально)
-

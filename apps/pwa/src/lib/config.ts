@@ -1,4 +1,4 @@
-const FALLBACK_URL = 'https://pinq-signaling.onrender.com';
+const FALLBACK_URL = 'https://pinq.onrender.com';
 
 export const SIGNALING_URL =
   (import.meta.env.VITE_SIGNALING_URL as string | undefined) ||
