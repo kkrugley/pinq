@@ -14,9 +14,14 @@ export class WebRTCSender {
   }
 
   private createPeer() {
+    if (typeof window === 'undefined' || !window.RTCPeerConnection) {
+      throw new Error('WebRTC не поддерживается в этом браузере');
+    }
+
     const peer = new SimplePeer({
       initiator: true,
       trickle: true,
+      wrtc: undefined,
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -26,6 +31,9 @@ export class WebRTCSender {
     });
 
     peer.on('signal', (data: SignalData) => this.signaling.sendSignal(data));
+    peer.on('error', (err) => {
+      console.error('[WebRTC] Peer error:', err);
+    });
     this.peer = peer;
     return peer;
   }
