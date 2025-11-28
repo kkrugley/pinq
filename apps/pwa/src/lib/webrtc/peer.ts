@@ -52,14 +52,6 @@ export class WebRTCSender {
         onStatus?.('Waiting for receiver...');
 
         await new Promise<void>((resolve, reject) => {
-          const removeListener = (event: string, handler: (...args: unknown[]) => void) => {
-            const off =
-              (peer as unknown as { off?: typeof peer.off }).off ??
-              (peer as unknown as { removeListener?: typeof peer.removeListener }).removeListener ??
-              (peer as unknown as { removeEventListener?: typeof peer.removeEventListener }).removeEventListener;
-            off?.call(peer, event, handler);
-          };
-
           const timer = setTimeout(() => {
             cleanup();
             reject(new Error('Не удалось дождаться подключения компьютера'));
@@ -75,8 +67,8 @@ export class WebRTCSender {
           };
           const cleanup = () => {
             clearTimeout(timer);
-            removeListener('connect', handleConnect);
-            removeListener('error', handleError);
+            peer.off('connect', handleConnect);
+            peer.off('error', handleError);
           };
           peer.once('connect', handleConnect);
           peer.once('error', handleError);
@@ -96,15 +88,6 @@ export class WebRTCSender {
 
   private waitForAck(timeoutMs = 10000) {
     const peer = this.getPeerOrThrow();
-    const removeListener = (event: string, handler: (...args: unknown[]) => void) => {
-      // simple-peer in browser uses readable-stream EventEmitter which doesn't implement off()
-      const off =
-        (peer as unknown as { off?: typeof peer.off }).off ??
-        (peer as unknown as { removeListener?: typeof peer.removeListener }).removeListener ??
-        (peer as unknown as { removeEventListener?: typeof peer.removeEventListener }).removeEventListener;
-      off?.call(peer, event, handler);
-    };
-
     return new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         cleanup();
@@ -131,9 +114,9 @@ export class WebRTCSender {
 
       const cleanup = () => {
         clearTimeout(timer);
-        removeListener('data', handleData);
-        removeListener('error', handleError);
-        removeListener('close', handleClose);
+        peer.off('data', handleData);
+        peer.off('error', handleError);
+        peer.off('close', handleClose);
       };
 
       peer.on('data', handleData);
