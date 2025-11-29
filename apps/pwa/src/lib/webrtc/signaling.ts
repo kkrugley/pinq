@@ -30,7 +30,7 @@ export class SignalingClient {
       }, timeoutMs);
 
       const handleConnect = () => {
-        this.socket?.emit('join-room', { code: this.code });
+        this.socket?.emit('join-room', { code: this.code, role: 'creator' });
       };
 
       const handleJoined = (payload: { code: string }) => {

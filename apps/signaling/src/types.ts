@@ -1,5 +1,6 @@
 export interface JoinRoomPayload {
   code: string;
+  role?: 'creator' | 'guest';
 }
 
 export interface SignalPayload {

@@ -94,7 +94,7 @@ export class SignalingClient extends EventEmitter {
       this.socket.on('room-full', onRoomFull);
       this.socket.on('room-not-found', onRoomNotFound);
       this.socket.on('room-expired', onExpired);
-      this.socket.emit('join-room', { code: normalized });
+      this.socket.emit('join-room', { code: normalized, role: 'guest' });
     });
   }
 
