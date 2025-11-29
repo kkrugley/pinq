@@ -13,7 +13,9 @@ export class SignalingClient extends EventEmitter {
     super();
     this.verbose = options.verbose;
     this.socket = io(this.url, {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'], // prefer polling first to avoid strict WS environments
+      upgrade: true,
+      forceNew: true,
       reconnectionAttempts: 3,
       autoConnect: false,
     });

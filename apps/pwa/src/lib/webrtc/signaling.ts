@@ -67,11 +67,13 @@ export class SignalingClient {
         this.socket?.off('room-joined', handleJoined);
         this.socket?.off('room-full', handleRoomFull);
         this.socket?.off('room-expired', handleRoomExpired);
-        this.socket?.off('room-not-found', handleRoomNotFound);
+      this.socket?.off('room-not-found', handleRoomNotFound);
       };
 
       this.socket = io(this.url, {
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'], // start with polling to survive CF/Render websocket quirks
+        upgrade: true,
+        forceNew: true,
       });
 
       this.socket.on('connect', handleConnect);
