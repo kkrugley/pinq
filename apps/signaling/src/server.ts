@@ -84,7 +84,7 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
       return;
     }
 
-    const state = rooms.get(code);
+    let state = rooms.get(code);
     if (state && state.sockets.size >= 2) {
       socket.emit('room-full', { code });
       return;
@@ -97,11 +97,11 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
 
     if (!state && role === 'creator') {
       const timer = setTimeout(() => clearRoom(code), ROOM_TTL_MS);
-      rooms.set(code, { code, sockets: new Set([socket.id]), timer });
-    } else {
-      state.sockets.add(socket.id);
+      state = { code, sockets: new Set(), timer };
+      rooms.set(code, state);
     }
 
+    state.sockets.add(socket.id);
     socket.join(code);
     scheduleRoomExpiry(code);
     socket.emit('room-joined', { code });
