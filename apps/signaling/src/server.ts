@@ -78,31 +78,20 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
 
   const handleJoin = (socket: Socket, payload: JoinRoomPayload) => {
     const code = payload.code?.trim().toUpperCase();
-    const role = payload.role === 'creator' ? 'creator' : 'guest';
     if (!code) {
       socket.emit('error', { message: 'Invalid room code' });
       return;
     }
 
     let state = rooms.get(code);
-    if (state && state.sockets.size >= 2) {
-      socket.emit('room-full', { code });
-      return;
-    }
-
-    if (!state && role === 'guest') {
-      socket.emit('room-not-found', { code });
-      return;
-    }
-
-    if (!state && role === 'creator') {
+    if (!state) {
       const timer = setTimeout(() => clearRoom(code), ROOM_TTL_MS);
       state = { code, sockets: new Set(), timer };
       rooms.set(code, state);
     }
 
-    if (!state) {
-      socket.emit('room-not-found', { code });
+    if (state.sockets.size >= 2) {
+      socket.emit('room-full', { code });
       return;
     }
 
