@@ -101,6 +101,11 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
       rooms.set(code, state);
     }
 
+    if (!state) {
+      socket.emit('room-not-found', { code });
+      return;
+    }
+
     state.sockets.add(socket.id);
     socket.join(code);
     scheduleRoomExpiry(code);
