@@ -53,11 +53,21 @@ export class WebRTCSender {
 
         await new Promise<void>((resolve, reject) => {
           const removeListener = (event: string, handler: (...args: unknown[]) => void) => {
-            const off =
-              (peer as unknown as { off?: typeof peer.off }).off ??
-              (peer as unknown as { removeListener?: typeof peer.removeListener }).removeListener ??
-              (peer as unknown as { removeEventListener?: typeof peer.removeEventListener }).removeEventListener;
-            off?.call(peer, event, handler);
+            if (typeof (peer as unknown as { off?: typeof peer.off }).off === 'function') {
+              (peer as unknown as { off: typeof peer.off }).off(event, handler);
+            } else if (
+              typeof (peer as unknown as { removeListener?: typeof peer.removeListener }).removeListener === 'function'
+            ) {
+              (peer as unknown as { removeListener: typeof peer.removeListener }).removeListener(event, handler);
+            } else if (
+              typeof (peer as unknown as { removeEventListener?: typeof peer.removeEventListener }).removeEventListener ===
+              'function'
+            ) {
+              (peer as unknown as { removeEventListener: typeof peer.removeEventListener }).removeEventListener(
+                event,
+                handler,
+              );
+            }
           };
 
           const timer = setTimeout(() => {
@@ -97,11 +107,18 @@ export class WebRTCSender {
   private waitForAck(timeoutMs = 10000) {
     const peer = this.getPeerOrThrow();
     const removeListener = (event: string, handler: (...args: unknown[]) => void) => {
-      const off =
-        (peer as unknown as { off?: typeof peer.off }).off ??
-        (peer as unknown as { removeListener?: typeof peer.removeListener }).removeListener ??
-        (peer as unknown as { removeEventListener?: typeof peer.removeEventListener }).removeEventListener;
-      off?.call(peer, event, handler);
+      if (typeof (peer as unknown as { off?: typeof peer.off }).off === 'function') {
+        (peer as unknown as { off: typeof peer.off }).off(event, handler);
+      } else if (
+        typeof (peer as unknown as { removeListener?: typeof peer.removeListener }).removeListener === 'function'
+      ) {
+        (peer as unknown as { removeListener: typeof peer.removeListener }).removeListener(event, handler);
+      } else if (
+        typeof (peer as unknown as { removeEventListener?: typeof peer.removeEventListener }).removeEventListener ===
+        'function'
+      ) {
+        (peer as unknown as { removeEventListener: typeof peer.removeEventListener }).removeEventListener(event, handler);
+      }
     };
 
     return new Promise<void>((resolve, reject) => {

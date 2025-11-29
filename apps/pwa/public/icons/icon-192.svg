@@ -1,6 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-labelledby="title desc">
-  <title id="title">Pair-In Quick mark</title>
-  <desc id="desc">Rounded square with interlocking arrows forming the letters P and Q</desc>
-  <rect x="8" y="8" width="176" height="176" rx="32" fill="#2563eb" />
-  <path d="M64 64h44c18 0 32 14 32 32s-14 32-32 32H88l24 24-16 16-48-48 48-48 16 16-24 24h20c7 0 12-5 12-12s-5-12-12-12H64z" fill="#eff6ff" />
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 192 192"
+   role="img"
+   aria-labelledby="title desc"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="icon-192.svg"
+   inkscape:version="1.4.2 (ebf0e94, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.9720582"
+     inkscape:cx="49.124206"
+     inkscape:cy="86.303828"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <title
+     id="title">Pair-In Quick mark</title>
+  <desc
+     id="desc">Rounded square with interlocking arrows forming the letters P and Q</desc>
+  <rect
+     x="8"
+     y="8"
+     width="176"
+     height="176"
+     rx="32"
+     fill="#2563eb"
+     id="rect1"
+     style="display:inline" />
+  <path
+     d="m 52.935407,27.943 h 60.228073 c 24.63875,0 43.80223,19.163477 43.80223,43.802233 0,24.638756 -19.16348,43.802237 -43.80223,43.802237 H 85.787081 L 118.63876,148.39914 96.73764,170.30026 31.03429,104.59691 96.73764,38.893558 118.63876,60.794675 85.787081,93.646349 h 27.376399 c 9.58174,0 16.42583,-6.844099 16.42583,-16.425837 0,-9.581738 -6.84409,-16.425837 -16.42583,-16.425837 H 52.935407 Z"
+     fill="#eff6ff"
+     id="path1"
+     style="stroke-width:1.36882" />
 </svg>

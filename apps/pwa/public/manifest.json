@@ -3,7 +3,9 @@
   "short_name": "pinq",
   "description": "P2P file and text transfer",
   "start_url": "/",
+  "language": "ru-RU",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
   "icons": [
