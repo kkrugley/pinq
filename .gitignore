@@ -16,6 +16,7 @@ Thumbs.db
 .idea
 .vscode/*
 !.vscode/extensions.json
+logs
 
 # Misc
 *.patch
