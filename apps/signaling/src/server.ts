@@ -98,6 +98,8 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
     state.sockets.add(socket.id);
     socket.join(code);
     scheduleRoomExpiry(code);
+    // eslint-disable-next-line no-console
+    console.log(`[SIGNAL] Socket ${socket.id} joining room ${code}, current members: ${state.sockets.size}`);
     socket.emit('room-joined', { code });
     socket.to(code).emit('peer-joined', { peerId: socket.id, code });
   };
@@ -109,6 +111,8 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
       return;
     }
 
+    // eslint-disable-next-line no-console
+    console.log(`[SIGNAL] Relaying signal in room ${code} from ${socket.id}`);
     socket.to(code).emit('signal', { signal: payload.signal, from: socket.id });
     scheduleRoomExpiry(code);
   };
@@ -117,6 +121,8 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
     for (const [code, state] of rooms.entries()) {
       if (!state.sockets.has(socket.id)) continue;
       state.sockets.delete(socket.id);
+      // eslint-disable-next-line no-console
+      console.log(`[SIGNAL] Socket ${socket.id} disconnected from room ${code}`);
       socket.to(code).emit('peer-disconnected', { peerId: socket.id, code });
 
       if (state.sockets.size === 0) {

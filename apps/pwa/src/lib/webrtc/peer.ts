@@ -25,14 +25,30 @@ export class WebRTCSender {
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:openrelay.metered.ca:80' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject',
+          },
         ],
       },
     });
+    console.log('[PWA] Creating SimplePeer as initiator');
 
-    peer.on('signal', (data: SignalData) => this.signaling.sendSignal(data));
+    peer.on('signal', (data: SignalData) => {
+      console.log('[PWA] Sending signal:', (data as { type?: string }).type || 'candidate');
+      this.signaling.sendSignal(data);
+    });
+    peer.on('connect', () => {
+      console.log('[PWA] ✅ WebRTC connected!');
+    });
+    peer.on('close', () => {
+      console.log('[PWA] ❌ WebRTC closed');
+    });
     peer.on('error', (err) => {
-      console.error('[WebRTC] Peer error:', err);
+      console.error('[PWA] ❌ Peer error:', err);
     });
     this.peer = peer;
     return peer;
@@ -44,6 +60,7 @@ export class WebRTCSender {
         onStatus?.('Warming up signaling...');
         await this.signaling.prewarm();
         onStatus?.('Joining room...');
+        console.log('[PWA] Joining room with code:', this.code);
         await this.signaling.connect();
 
         const peer = this.createPeer();

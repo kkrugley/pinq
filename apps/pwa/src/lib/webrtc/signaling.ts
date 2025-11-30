@@ -62,12 +62,13 @@ export class SignalingClient {
 
       const cleanup = () => {
         clearTimeout(timer);
+        console.log('[PWA Signaling] Cleanup - removing listeners');
         this.socket?.off('connect', handleConnect);
         this.socket?.off('connect_error', handleConnectError);
         this.socket?.off('room-joined', handleJoined);
         this.socket?.off('room-full', handleRoomFull);
         this.socket?.off('room-expired', handleRoomExpired);
-      this.socket?.off('room-not-found', handleRoomNotFound);
+        this.socket?.off('room-not-found', handleRoomNotFound);
       };
 
       this.socket = io(this.url, {
