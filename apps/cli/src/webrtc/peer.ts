@@ -28,17 +28,36 @@ export class WebRTCReceiver extends EventEmitter {
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:openrelay.metered.ca:80' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject',
+          },
         ],
       },
       channelConfig: { maxPacketLifeTime: 3000 },
       allowHalfTrickle: true,
     });
+    console.log('[CLI] Creating SimplePeer as receiver');
 
-    this.peer.on('signal', (data: SignalData) => this.signaling.sendSignal(this.code, data));
+    this.peer.on('signal', (data: SignalData) => {
+      console.log('[CLI] Sending signal:', (data as { type?: string }).type || 'candidate');
+      this.signaling.sendSignal(this.code, data);
+    });
     this.peer.on('data', (chunk: Buffer) => this.handleData(chunk));
-    this.peer.on('error', (err) => this.emit('error', err));
-    this.peer.on('close', () => this.emit('close'));
+    this.peer.on('connect', () => {
+      console.log('[CLI] ✅ WebRTC connected!');
+    });
+    this.peer.on('close', () => {
+      console.log('[CLI] ❌ WebRTC closed');
+      this.emit('close');
+    });
+    this.peer.on('error', (err) => {
+      console.error('[CLI] ❌ Peer error:', err);
+      this.emit('error', err);
+    });
 
     const onSignal = (payload: { signal: SignalData }) => {
       this.peer.signal(payload.signal);
