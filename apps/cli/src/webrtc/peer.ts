@@ -22,6 +22,8 @@ export class WebRTCReceiver extends EventEmitter {
 
   private verbose: boolean;
 
+  private isCleaningUp = false;
+
   constructor(
     private readonly code: string,
     private readonly signaling: SignalingClient,
@@ -132,11 +134,13 @@ export class WebRTCReceiver extends EventEmitter {
     this.peer.on('close', () => {
       // eslint-disable-next-line no-console
       console.log('[CLI] ❌ WebRTC closed');
+      this.cleanup();
       this.emit('close');
     });
     this.peer.on('error', (err) => {
       // eslint-disable-next-line no-console
       console.error('[CLI] ❌ Peer error:', err);
+      this.cleanup();
       this.emit('error', err);
     });
 
@@ -148,7 +152,9 @@ export class WebRTCReceiver extends EventEmitter {
     }
 
     const onSignal = (payload: { signal: SignalData }) => {
-      this.peer!.signal(payload.signal);
+      if (this.peer && !this.peer.destroyed && !this.isCleaningUp) {
+        this.peer.signal(payload.signal);
+      }
     };
 
     this.signaling.on('signal', onSignal);
@@ -208,10 +214,11 @@ export class WebRTCReceiver extends EventEmitter {
   }
 
   close() {
-    this.cleanupSignalListeners();
-    if (this.peer) {
+    this.cleanup();
+    if (this.peer && !this.peer.destroyed) {
       this.peer.destroy();
     }
+    this.peer = null;
   }
 
   private handleData(chunk: Buffer) {
@@ -228,5 +235,14 @@ export class WebRTCReceiver extends EventEmitter {
     }
 
     this.emit('data', chunk);
+  }
+
+  private cleanup() {
+    if (this.isCleaningUp) return;
+    this.isCleaningUp = true;
+    this.cleanupSignalListeners();
+    if (this.peer) {
+      this.peer.removeAllListeners();
+    }
   }
 }

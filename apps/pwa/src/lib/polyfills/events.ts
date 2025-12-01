@@ -20,6 +20,7 @@ type EventEmitterMethods = {
   removeListener(this: EventEmitterInstance, event: EventKey, listener: Listener): EventEmitterInstance & EventEmitterMethods;
   off(this: EventEmitterInstance, event: EventKey, listener: Listener): EventEmitterInstance & EventEmitterMethods;
   removeAllListeners(this: EventEmitterInstance, event?: EventKey): EventEmitterInstance & EventEmitterMethods;
+  listenerCount(this: EventEmitterInstance, event: EventKey): number;
   emit(this: EventEmitterInstance, event: EventKey, ...args: unknown[]): boolean;
 };
 
@@ -40,7 +41,7 @@ const getListeners = (emitter: EventEmitterInstance, event: EventKey) => {
 
 (EventEmitter as unknown as EventEmitterCtor).prototype.on = function (event: EventKey, listener: Listener) {
   getListeners(this, event).add(listener);
-  return this;
+  return this as EventEmitterInstance & EventEmitterMethods;
 };
 
 (EventEmitter as unknown as EventEmitterCtor).prototype.addListener = function (
@@ -64,14 +65,14 @@ const getListeners = (emitter: EventEmitterInstance, event: EventKey) => {
   listener: Listener,
 ) {
   const listeners = this._events.get(event);
-  if (!listeners) return this;
+  if (!listeners) return this as EventEmitterInstance & EventEmitterMethods;
 
   listeners.delete(listener);
   if (listeners.size === 0) {
     this._events.delete(event);
   }
 
-  return this;
+  return this as EventEmitterInstance & EventEmitterMethods;
 };
 
 (EventEmitter as unknown as EventEmitterCtor).prototype.off = function (event: EventKey, listener: Listener) {
@@ -81,11 +82,15 @@ const getListeners = (emitter: EventEmitterInstance, event: EventKey) => {
 (EventEmitter as unknown as EventEmitterCtor).prototype.removeAllListeners = function (event?: EventKey) {
   if (typeof event === 'undefined') {
     this._events.clear();
-    return this;
+    return this as EventEmitterInstance & EventEmitterMethods;
   }
 
   this._events.delete(event);
-  return this;
+  return this as EventEmitterInstance & EventEmitterMethods;
+};
+
+(EventEmitter as unknown as EventEmitterCtor).prototype.listenerCount = function (event: EventKey) {
+  return this._events.get(event)?.size ?? 0;
 };
 
 (EventEmitter as unknown as EventEmitterCtor).prototype.emit = function (event: EventKey, ...args: unknown[]) {
