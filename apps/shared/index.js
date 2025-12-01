@@ -8,3 +8,7 @@ export const ICE_SERVERS = [
     credential: 'openrelayproject',
   },
 ];
+
+export const CONTROL_PREFIX = '__PINQ_CTRL__';
+export const ACK_MARKER = `${CONTROL_PREFIX}ACK`;
+export const EOF_MARKER = `${CONTROL_PREFIX}EOF`;

@@ -1,11 +1,11 @@
 import SimplePeer, { type SignalData, type SimplePeerInstance } from 'simple-peer';
-import { ICE_SERVERS } from '@pinq/shared';
+import { ACK_MARKER, EOF_MARKER, ICE_SERVERS } from '@pinq/shared';
 import type { Metadata } from '../types';
 import { chunkFile, chunkText, CHUNK_SIZE } from '../utils/fileChunker';
 import { SignalingClient } from './signaling';
 
 const CONNECT_TIMEOUT_MS = 90_000;
-const ACK_TIMEOUT_MS = 20_000;
+const ACK_TIMEOUT_MS = 45_000; // allow extra time for large files before considering it a failure
 
 export class WebRTCSender {
   private peer: SimplePeerInstance | null = null;
@@ -180,7 +180,7 @@ export class WebRTCSender {
 
       const handleData = (data: Uint8Array | string) => {
         const payload = typeof data === 'string' ? data : new TextDecoder().decode(data);
-        if (payload === 'ACK') {
+        if (payload === ACK_MARKER) {
           cleanup();
           resolve();
         }
@@ -228,7 +228,7 @@ export class WebRTCSender {
       onProgress?.((sent / total) * 100);
     }
 
-    peer.send('EOF');
+    peer.send(EOF_MARKER);
     onProgress?.(100);
 
     await this.waitForAck();
@@ -255,7 +255,7 @@ export class WebRTCSender {
       onProgress?.((offset / file.size) * 100);
     }
 
-    peer.send('EOF');
+    peer.send(EOF_MARKER);
     onProgress?.(100);
 
     await this.waitForAck();

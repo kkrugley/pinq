@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import SimplePeer, { SignalData } from 'simple-peer';
 import wrtc from '@roamhq/wrtc';
-import { ICE_SERVERS } from '@pinq/shared';
+import { ACK_MARKER, ICE_SERVERS } from '@pinq/shared';
 import { Metadata } from '../types.js';
 import { SignalingClient } from './signaling.js';
 
@@ -10,6 +10,7 @@ interface ReceiverOptions {
 }
 
 const DEFAULT_WEBRTC_TIMEOUT_MS = 90_000;
+const METADATA_TIMEOUT_MS = 5 * 60 * 1000; // room TTL is 5 minutes
 
 export class WebRTCReceiver extends EventEmitter {
   private peer: SimplePeer.Instance | null = null;
@@ -25,6 +26,8 @@ export class WebRTCReceiver extends EventEmitter {
   private verbose: boolean;
 
   private isCleaningUp = false;
+
+  private intentionalClose = false;
 
   constructor(
     private readonly code: string,
@@ -108,6 +111,7 @@ export class WebRTCReceiver extends EventEmitter {
   }
 
   private createPeer() {
+    this.intentionalClose = false;
     this.peer = new SimplePeer({
       initiator: false,
       trickle: true,
@@ -128,20 +132,25 @@ export class WebRTCReceiver extends EventEmitter {
       }
       this.signaling.sendSignal(this.code, data);
     });
-    this.peer.on('data', (chunk: Buffer) => this.handleData(chunk));
+    this.peer.on('data', (chunk: Buffer | string) => this.handleData(chunk));
     this.peer.on('connect', () => {
       // eslint-disable-next-line no-console
       console.log('[CLI] ✅ WebRTC connected!');
     });
     this.peer.on('close', () => {
+      const message = this.intentionalClose ? '[CLI] WebRTC closed' : '[CLI] ❌ WebRTC closed';
       // eslint-disable-next-line no-console
-      console.log('[CLI] ❌ WebRTC closed');
+      console.log(message);
+      this.metadataRejecter?.(new Error('WebRTC connection closed'));
+      this.resetMetadataState();
       this.cleanup();
       this.emit('close');
     });
     this.peer.on('error', (err) => {
       // eslint-disable-next-line no-console
       console.error('[CLI] ❌ Peer error:', err);
+      this.metadataRejecter?.(err);
+      this.resetMetadataState();
       this.cleanup();
       this.emit('error', err);
     });
@@ -189,23 +198,29 @@ export class WebRTCReceiver extends EventEmitter {
     });
   }
 
-  waitForMetadata(timeoutMs = 60000) {
-    const effectiveTimeout = timeoutMs ?? 60000;
+  waitForMetadata(timeoutMs = METADATA_TIMEOUT_MS) {
+    const effectiveTimeout = timeoutMs ?? METADATA_TIMEOUT_MS;
 
     if (this.metadata) return Promise.resolve(this.metadata);
 
     return new Promise<Metadata>((resolve, reject) => {
       const timer = setTimeout(() => {
+        this.metadataResolver = undefined;
+        this.metadataRejecter = undefined;
         reject(new Error('Timed out waiting for metadata'));
       }, effectiveTimeout);
 
       this.metadataResolver = (meta) => {
         clearTimeout(timer);
+        this.metadataResolver = undefined;
+        this.metadataRejecter = undefined;
         resolve(meta);
       };
 
       this.metadataRejecter = (err) => {
         clearTimeout(timer);
+        this.metadataResolver = undefined;
+        this.metadataRejecter = undefined;
         reject(err);
       };
     });
@@ -213,11 +228,12 @@ export class WebRTCReceiver extends EventEmitter {
 
   sendAck() {
     if (this.peer && this.peer.connected) {
-      this.peer.send('ACK');
+      this.peer.send(ACK_MARKER);
     }
   }
 
   close() {
+    this.intentionalClose = true;
     this.cleanup();
     if (this.peer && !this.peer.destroyed) {
       this.peer.destroy();
@@ -225,14 +241,19 @@ export class WebRTCReceiver extends EventEmitter {
     this.peer = null;
   }
 
-  private handleData(chunk: Buffer) {
+  private handleData(chunk: Buffer | string) {
     if (!this.metadata) {
       try {
-        const meta = JSON.parse(chunk.toString()) as Metadata;
+        const metaString = typeof chunk === 'string' ? chunk : chunk.toString();
+        const meta = JSON.parse(metaString) as Metadata;
         this.metadata = meta;
         this.metadataResolver?.(meta);
+        this.metadataResolver = undefined;
+        this.metadataRejecter = undefined;
       } catch (err) {
         this.metadataRejecter?.(new Error('Failed to parse metadata'));
+        this.metadataResolver = undefined;
+        this.metadataRejecter = undefined;
         this.emit('error', err as Error);
       }
       return;
@@ -244,9 +265,16 @@ export class WebRTCReceiver extends EventEmitter {
   private cleanup() {
     if (this.isCleaningUp) return;
     this.isCleaningUp = true;
+    this.resetMetadataState();
     this.cleanupSignalListeners();
     if (this.peer) {
       this.peer.removeAllListeners();
     }
+  }
+
+  private resetMetadataState() {
+    this.metadata = undefined;
+    this.metadataResolver = undefined;
+    this.metadataRejecter = undefined;
   }
 }

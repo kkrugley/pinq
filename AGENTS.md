@@ -646,7 +646,7 @@ class WebRTCSender {
 ```typescript
 // lib/utils/codeGenerator.ts
 export function generateCode(): string {
-  const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
+  const chars = 'ABCDEFGHJKMNPQRSTUWXYZ23456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];

@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import path from 'path';
 import readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
+import { ACK_MARKER, EOF_MARKER } from '@pinq/shared';
 import { DEFAULT_DOWNLOAD_DIR, SIGNALING_URL } from '../config.js';
 import { Metadata, ReceiveOptions } from '../types.js';
 import { createProgressBar, createSpinner, formatBytes } from '../utils/display.js';
@@ -9,7 +10,8 @@ import { createWriteStream, resolveDownloadPath } from '../utils/file.js';
 import { SignalingClient } from '../webrtc/signaling.js';
 import { WebRTCReceiver } from '../webrtc/peer.js';
 
-const ACK_LINGER_MS = 500;
+const ACK_LINGER_MS = 800;
+const EOF_BUFFER = Buffer.from(EOF_MARKER);
 
 async function prewarm(url: string, verbose?: boolean) {
   const controller = new AbortController();
@@ -30,25 +32,71 @@ async function prewarm(url: string, verbose?: boolean) {
   }
 }
 
-async function promptConfirm(question: string) {
+async function promptConfirm(question: string, defaultYes = false) {
   const rl = readline.createInterface({ input, output });
-  const answer = await rl.question(`${question} (y/N): `);
+  const suffix = defaultYes ? ' (Y/n): ' : ' (y/N): ';
+  const answer = await rl.question(`${question}${suffix}`);
   rl.close();
-  return ['y', 'yes'].includes(answer.trim().toLowerCase());
+  const normalized = answer.trim().toLowerCase();
+  if (!normalized) return defaultYes;
+  return ['y', 'yes', 'д', 'да'].includes(normalized);
 }
 
 function handleTextReception(receiver: WebRTCReceiver) {
-  let text = '';
-  receiver.on('data', (chunk) => {
-    const content = chunk.toString();
-    if (content === 'EOF') {
+  return new Promise<void>((resolve, reject) => {
+    let text = '';
+    let finished = false;
+
+    const cleanup = () => {
+      receiver.off('data', onData);
+      receiver.off('error', onError);
+      receiver.off('close', onClose);
+    };
+
+    const complete = () => {
+      if (finished) return;
+      finished = true;
       receiver.sendAck();
       // eslint-disable-next-line no-console
       console.log(chalk.green(`\n${text}`));
-      setTimeout(() => receiver.close(), ACK_LINGER_MS);
-    } else {
-      text += content;
-    }
+      setTimeout(() => {
+        receiver.close();
+        cleanup();
+        resolve();
+      }, ACK_LINGER_MS);
+    };
+
+    const onError = (err: Error) => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      reject(err);
+    };
+
+    const onClose = () => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      reject(new Error('Соединение закрыто до завершения передачи'));
+    };
+
+    const onData = (chunk: Buffer | string) => {
+      const content =
+        typeof chunk === 'string'
+          ? chunk
+          : chunk.equals(EOF_BUFFER)
+            ? EOF_MARKER
+            : chunk.toString();
+      if (content === EOF_MARKER) {
+        complete();
+      } else {
+        text += content;
+      }
+    };
+
+    receiver.on('data', onData);
+    receiver.on('error', onError);
+    receiver.on('close', onClose);
   });
 }
 
@@ -58,44 +106,74 @@ function handleFileReception(receiver: WebRTCReceiver, metadata: Metadata, targe
   const total = metadata.size ?? 0;
   const progressBar = total > 1024 * 1024 ? createProgressBar(total) : undefined;
 
-  let receivedBytes = 0;
+  return new Promise<void>((resolve, reject) => {
+    let finished = false;
 
-  receiver.on('data', (chunk) => {
-    const content = chunk.toString();
-    if (content === 'EOF') {
+    const cleanup = () => {
+      receiver.off('data', onData);
+      receiver.off('error', onError);
+      receiver.off('close', onClose);
+      stream.off('error', onStreamError);
+    };
+
+    const fail = (err: Error) => {
+      if (finished) return;
+      finished = true;
       if (progressBar) {
         progressBar.stop();
       }
-      stream.end(() => {
-        receiver.sendAck();
-        // eslint-disable-next-line no-console
-        console.log(chalk.green(`✓ Saved: ${filepath}`));
-        setTimeout(() => receiver.close(), ACK_LINGER_MS);
-      });
-      return;
-    }
+      cleanup();
+      stream.destroy();
+      reject(err);
+    };
 
-    const success = stream.write(chunk);
-    receivedBytes += chunk.length;
+    const onStreamError = (err: Error) => {
+      fail(err);
+    };
 
-    if (progressBar) {
-      progressBar.increment(chunk.length);
-    }
+    const onError = (err: Error) => fail(err);
 
-    if (!success) {
-      stream.once('drain', () => {
-        // resume once drained
-      });
-    }
-  });
+    const onClose = () => fail(new Error('Соединение закрыто до завершения передачи'));
 
-  stream.on('error', (err) => {
-    // eslint-disable-next-line no-console
-    console.error(chalk.red(`✖ File write error: ${err.message}`));
-    if (progressBar) {
-      progressBar.stop();
-    }
-    receiver.close();
+    const onData = (chunk: Buffer | string) => {
+      const isEof =
+        typeof chunk === 'string' ? chunk === EOF_MARKER : (chunk as Buffer).equals(EOF_BUFFER);
+      if (isEof) {
+        finished = true;
+        if (progressBar) {
+          progressBar.stop();
+        }
+        stream.end(() => {
+          receiver.sendAck();
+          // eslint-disable-next-line no-console
+          console.log(chalk.green(`✓ Saved: ${filepath}`));
+          setTimeout(() => {
+            receiver.close();
+            cleanup();
+            resolve();
+          }, ACK_LINGER_MS);
+        });
+        return;
+      }
+
+      const bufferChunk = typeof chunk === 'string' ? Buffer.from(chunk) : (chunk as Buffer);
+      const success = stream.write(bufferChunk);
+
+      if (progressBar) {
+        progressBar.increment(bufferChunk.length);
+      }
+
+      if (!success) {
+        stream.once('drain', () => {
+          // resume once drained
+        });
+      }
+    };
+
+    receiver.on('data', onData);
+    receiver.on('error', onError);
+    receiver.on('close', onClose);
+    stream.on('error', onStreamError);
   });
 }
 
@@ -104,8 +182,6 @@ export async function receiveCommand(code: string, options: ReceiveOptions) {
   const downloadDir = resolveDownloadPath(options.path || DEFAULT_DOWNLOAD_DIR);
   const signaling = new SignalingClient(SIGNALING_URL, { verbose: options.verbose });
   const receiver = new WebRTCReceiver(normalizedCode, signaling, { verbose: options.verbose });
-  receiver.once('close', () => signaling.disconnect());
-  receiver.once('error', () => signaling.disconnect());
 
   const connectSpinner = createSpinner('Пробуждение сервера и подключение...', options.verbose);
   try {
@@ -114,15 +190,28 @@ export async function receiveCommand(code: string, options: ReceiveOptions) {
     connectSpinner.succeed('Подключились к серверу, ожидаем телефон...');
   } catch (err) {
     connectSpinner.fail((err as Error).message);
-    signaling.disconnect();
     throw err;
   }
 
-  const peerSpinner = createSpinner('Ожидание подключения телефона...', options.verbose);
   try {
-    await receiver.start();
-    const metadata = await receiver.waitForMetadata();
-    peerSpinner.succeed('Телефон подключен');
+    const peerSpinner = createSpinner('Ожидание подключения телефона...', options.verbose);
+    try {
+      await receiver.start();
+      peerSpinner.succeed('Телефон подключен');
+    } catch (err) {
+      peerSpinner.fail((err as Error).message);
+      throw err;
+    }
+
+    const metadataSpinner = createSpinner('Ожидаем данные от телефона...', options.verbose);
+    let metadata: Metadata;
+    try {
+      metadata = await receiver.waitForMetadata();
+      metadataSpinner.stop();
+    } catch (err) {
+      metadataSpinner.fail((err as Error).message);
+      throw err;
+    }
 
     if (metadata.type === 'file') {
       if (options.confirm) {
@@ -130,21 +219,17 @@ export async function receiveCommand(code: string, options: ReceiveOptions) {
           `Receive file ${metadata.filename || 'unnamed'} (${formatBytes(metadata.size)}) to ${path.resolve(downloadDir)}?`,
         );
         if (!ok) {
-          receiver.close();
-          signaling.disconnect();
           // eslint-disable-next-line no-console
           console.log(chalk.yellow('Transfer cancelled by user.'));
           return;
         }
       }
-      handleFileReception(receiver, metadata, downloadDir);
+      await handleFileReception(receiver, metadata, downloadDir);
     } else {
-      handleTextReception(receiver);
+      await handleTextReception(receiver);
     }
-  } catch (err) {
-    peerSpinner.fail((err as Error).message);
+  } finally {
     receiver.close();
     signaling.disconnect();
-    throw err;
   }
 }
