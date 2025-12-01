@@ -30,7 +30,7 @@ export default defineConfig({
         description: 'P2P file and text transfer',
         start_url: '/',
         display: 'standalone',
-        background_color: '#ffffff',
+        background_color: '#020617',
         theme_color: '#3b82f6',
         icons: [
           {
