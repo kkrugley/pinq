@@ -11,6 +11,7 @@ declare module 'simple-peer' {
   }
 
   export interface Instance {
+    connected: boolean;
     signal(data: SignalData): void;
     send(data: any): void;
     destroy(err?: Error): void;
@@ -28,6 +29,7 @@ declare module 'simple-peer' {
   }
 
   export default class SimplePeer implements Instance {
+    connected: boolean;
     constructor(opts?: SimplePeerOptions);
     static readonly WEBRTC_SUPPORT: boolean;
     signal(data: SignalData): void;
