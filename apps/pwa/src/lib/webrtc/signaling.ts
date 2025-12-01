@@ -104,6 +104,23 @@ export class SignalingClient {
         timeout: 50000,
       });
 
+      // socket.io-client has an internal ack timeout helper that assumes the
+      // callback is always a function. In practice we occasionally see
+      // `_registerAckCallback` invoked with an undefined ack (for example after
+      // a reconnect race), which leads to a runtime "t.call is undefined" error
+      // in the bundled PWA. Guard the method so it no-ops when the ack is
+      // missing instead of crashing the UI.
+      const socketWithAck = this.socket as unknown as {
+        _registerAckCallback?: (id: number, ack?: (...args: unknown[]) => void) => void;
+      };
+      const originalRegisterAck = socketWithAck._registerAckCallback?.bind(socketWithAck);
+      if (originalRegisterAck) {
+        socketWithAck._registerAckCallback = (id: number, ack?: (...args: unknown[]) => void) => {
+          if (typeof ack !== 'function') return;
+          originalRegisterAck(id, ack);
+        };
+      }
+
       this.socket.on('connect', handleConnect);
       this.socket.on('connect_error', handleConnectError);
       this.socket.on('room-joined', handleJoined);
