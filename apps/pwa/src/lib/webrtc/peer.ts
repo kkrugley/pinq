@@ -4,6 +4,9 @@ import type { Metadata } from '../types';
 import { chunkFile, chunkText, CHUNK_SIZE } from '../utils/fileChunker';
 import { SignalingClient } from './signaling';
 
+const CONNECT_TIMEOUT_MS = 90_000;
+const ACK_TIMEOUT_MS = 20_000;
+
 export class WebRTCSender {
   private peer: SimplePeerInstance | null = null;
 
@@ -86,7 +89,7 @@ export class WebRTCSender {
     };
   }
 
-  async connect(onStatus?: (status: string) => void, timeoutMs = 60000): Promise<void> {
+  async connect(onStatus?: (status: string) => void, timeoutMs = CONNECT_TIMEOUT_MS): Promise<void> {
     if (!this.connectionPromise) {
       this.connectionPromise = (async () => {
         onStatus?.('Пробуждение сервера...');
@@ -166,7 +169,7 @@ export class WebRTCSender {
     return this.peer;
   }
 
-  private waitForAck(timeoutMs = 10000) {
+  private waitForAck(timeoutMs = ACK_TIMEOUT_MS) {
     const peer = this.getPeerOrThrow();
 
     return new Promise<void>((resolve, reject) => {

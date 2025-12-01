@@ -15,13 +15,13 @@ Pair-In Quick enables direct peer-to-peer transfer of files and text from a mobi
 1. **Security & Privacy**
    - All data transfers via P2P (WebRTC DataChannel with DTLS encryption)
    - Signaling server only exchanges SDP/ICE candidates, never file contents
-   - 6-digit pairing codes with 5-minute TTL
+   - 6-digit pairing codes (without `O`/`0`) with 5-minute TTL
 
 2. **User Experience**
    - PWA: Simple UI with file/text selection and pairing code display
    - CLI: Single command `pinq receive ABC123` with progress indicators
    - Auto-save files to ~/Downloads, display text in console
-   - Pre-warming for Render.com cold starts
+   - Pre-warming for Render.com cold starts (PWA prewarms on open/new code; CLI pings before join)
 
 3. **Technical Constraints**
    - Max file size: 50 MB
@@ -82,7 +82,13 @@ Events:
 ```
 iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:openrelay.metered.ca:80' }
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  {
+    urls: 'turn:openrelay.metered.ca:80',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  }
 ]
 ```
 
@@ -417,7 +423,7 @@ if (metadata.type === 'file') {
 # Formula/pinq.rb
 class QuickShare < Formula
   desc "P2P file transfer CLI companion"
-  homepage "https://github.com/yourusername/pinq"
+  homepage "https://github.com/kkrugley/pinq"
   url "https://registry.npmjs.org/pinq-cli/-/pinq-cli-0.1.0.tgz"
   sha256 "..."
   
@@ -436,7 +442,7 @@ end
 PackageIdentifier: QuickShare.QuickShare
 PackageVersion: 0.1.0
 PackageLocale: en-US
-Publisher: Your Name
+Publisher: kkrugley
 PackageName: Pair-In Quick CLI
 License: GPL v3
 ShortDescription: P2P file transfer companion
@@ -512,7 +518,7 @@ apps/pwa/
 1. **Idle (начальное):**
    ```
    ┌──────────────────────────┐
-   │      Pair-In Quick         │
+   │      Pair-In Quick       │
    │                          │
    │  [📄 Send Text]          │
    │  [📁 Send File]          │
@@ -530,7 +536,7 @@ apps/pwa/
    │  │                    │  │
    │  └────────────────────┘  │
    │                          │
-   │       [Send ➜]           │
+   │       [Send ➜]          │
    └──────────────────────────┘
    ```
 
@@ -640,7 +646,7 @@ class WebRTCSender {
 ```typescript
 // lib/utils/codeGenerator.ts
 export function generateCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
@@ -659,7 +665,7 @@ export function generateCode(): string {
   "description": "P2P file and text transfer",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#02091b",
   "theme_color": "#3b82f6",
   "icons": [
     {
@@ -846,13 +852,13 @@ npm publish
 **Homebrew tap:**
 ```bash
 # Создать tap репозиторий
-git clone https://github.com/yourusername/homebrew-tap
+git clone https://github.com/kkrugley/homebrew-tap
 cd homebrew-tap
 # Добавить Formula/pinq.rb
 git push
 
 # Пользователи установят:
-brew tap yourusername/tap
+brew tap kkrugley/tap
 brew install pinq
 ```
 

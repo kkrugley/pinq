@@ -5,7 +5,12 @@ Pair-In Quick CLI for receiving text and files from the mobile PWA via WebRTC Da
 ## Installation
 
 ```bash
+# if published to npm
 pnpm install -g pinq-cli
+
+# or run from this repo without installing globally
+pnpm --filter pinq-cli build
+node apps/cli/dist/index.js receive ABC123
 ```
 
 ## Usage
@@ -36,6 +41,10 @@ pinq receive ABC123 --verbose
 - `SIGNALING_URL`: Override the signaling server URL (default: `https://pinq.onrender.com`)
 - `DOWNLOAD_DIR`: Override the default download directory for all runs
 
+### Notes
+- Pairing codes are 6 characters and exclude `O`/`0` to reduce input mistakes.
+- The CLI pre-warms the signaling server and uses ~90s timeouts to survive Render cold starts.
+
 ## Development
 
 ```bash
@@ -43,6 +52,20 @@ pnpm install
 pnpm --filter pinq-cli build   # compile to dist/
 pnpm --filter pinq-cli test    # run Node.js tests (@roamhq/wrtc required)
 ```
+
+## Publishing
+To publish a new version to npm:
+1. Bump the version in `package.json`.
+2. Build the CLI:
+   ```bash
+   pnpm --filter pinq-cli build
+   ```
+3. Publish:
+   ```bash
+   cd apps/cli
+   pnpm publish --access public
+   ```
+For Homebrew/Winget, point installers at the npm tarball produced by the publish step.
 
 ## Protocol
 - Uses Socket.io for signaling with 6-character pairing codes (TTL ~5 minutes)

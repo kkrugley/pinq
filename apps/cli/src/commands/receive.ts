@@ -9,9 +9,11 @@ import { createWriteStream, resolveDownloadPath } from '../utils/file.js';
 import { SignalingClient } from '../webrtc/signaling.js';
 import { WebRTCReceiver } from '../webrtc/peer.js';
 
+const ACK_LINGER_MS = 500;
+
 async function prewarm(url: string, verbose?: boolean) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 50000);
+  const timer = setTimeout(() => controller.abort(), 70000);
   try {
     const res = await fetch(`${url}/health`, { signal: controller.signal });
     if (res.ok && verbose) {
@@ -43,7 +45,7 @@ function handleTextReception(receiver: WebRTCReceiver) {
       receiver.sendAck();
       // eslint-disable-next-line no-console
       console.log(chalk.green(`\n${text}`));
-      receiver.close();
+      setTimeout(() => receiver.close(), ACK_LINGER_MS);
     } else {
       text += content;
     }
@@ -68,7 +70,7 @@ function handleFileReception(receiver: WebRTCReceiver, metadata: Metadata, targe
         receiver.sendAck();
         // eslint-disable-next-line no-console
         console.log(chalk.green(`✓ Saved: ${filepath}`));
-        receiver.close();
+        setTimeout(() => receiver.close(), ACK_LINGER_MS);
       });
       return;
     }

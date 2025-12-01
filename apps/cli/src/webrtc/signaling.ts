@@ -5,6 +5,8 @@ interface SignalingOptions {
   verbose?: boolean;
 }
 
+const DEFAULT_SIGNALING_TIMEOUT_MS = 90_000;
+
 export class SignalingClient extends EventEmitter {
   private socket: Socket;
   private verbose?: boolean;
@@ -16,8 +18,9 @@ export class SignalingClient extends EventEmitter {
       transports: ['polling', 'websocket'], // prefer polling first to avoid strict WS environments
       upgrade: true,
       forceNew: true,
-      reconnectionAttempts: 3,
+      reconnectionAttempts: 5,
       autoConnect: false,
+      timeout: DEFAULT_SIGNALING_TIMEOUT_MS,
     });
 
     this.socket.on('signal', (payload) => this.emit('signal', payload));
@@ -26,13 +29,15 @@ export class SignalingClient extends EventEmitter {
     this.socket.on('room-expired', (payload) => this.emit('room-expired', payload));
   }
 
-  async connect(timeoutMs = 30000) {
+  async connect(timeoutMs = DEFAULT_SIGNALING_TIMEOUT_MS) {
     if (this.socket.connected) return;
+
+    const effectiveTimeout = timeoutMs ?? DEFAULT_SIGNALING_TIMEOUT_MS;
 
     const connectionPromise = new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error('Timed out connecting to signaling server'));
-      }, timeoutMs);
+      }, effectiveTimeout);
 
       this.socket.once('connect', () => {
         clearTimeout(timer);
@@ -49,18 +54,24 @@ export class SignalingClient extends EventEmitter {
       });
     });
 
+    // ensure socket.io uses the extended timeout as well
+    const manager = this.socket.io as unknown as { opts?: { timeout?: number } };
+    if (manager.opts) {
+      manager.opts.timeout = effectiveTimeout;
+    }
     this.socket.connect();
     return connectionPromise;
   }
 
-  async join(code: string, timeoutMs = 30000) {
+  async join(code: string, timeoutMs = DEFAULT_SIGNALING_TIMEOUT_MS) {
     const normalized = code.trim().toUpperCase();
-    await this.connect(timeoutMs);
+    await this.connect(timeoutMs ?? DEFAULT_SIGNALING_TIMEOUT_MS);
+    const effectiveTimeout = timeoutMs ?? DEFAULT_SIGNALING_TIMEOUT_MS;
 
     return new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error('Timed out joining room'));
-      }, timeoutMs);
+      }, effectiveTimeout);
 
       const cleanup = () => {
         clearTimeout(timer);

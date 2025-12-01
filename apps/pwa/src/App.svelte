@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import ConnectionStatus from './lib/components/ConnectionStatus.svelte';
   import CodeDisplay from './lib/components/CodeDisplay.svelte';
   import FileSelector from './lib/components/FileSelector.svelte';
@@ -8,6 +8,7 @@
   import { SIGNALING_URL } from './lib/config';
   import { generateCode } from './lib/utils/codeGenerator';
   import { WebRTCSender } from './lib/webrtc/peer';
+  import { SignalingClient } from './lib/webrtc/signaling';
 
   type Mode = 'idle' | 'text' | 'file';
 
@@ -24,6 +25,16 @@
   let errorMessage = '';
   let copyNotice = '';
   let activePayloadLabel = '';
+  let prewarmPromise: Promise<void> | null = null;
+
+  async function prewarmSignaling() {
+    if (prewarmPromise) return prewarmPromise;
+    const client = new SignalingClient(SIGNALING_URL, pairingCode);
+    prewarmPromise = client.prewarm().finally(() => {
+      prewarmPromise = null;
+    });
+    return prewarmPromise;
+  }
 
   function resetSession() {
     sender?.destroy();
@@ -40,7 +51,16 @@
     errorMessage = '';
     copyNotice = '';
     activePayloadLabel = '';
+    void prewarmSignaling();
   }
+
+  function handleRetry() {
+    resetSession();
+  }
+
+  onMount(() => {
+    void prewarmSignaling();
+  });
 
   onDestroy(() => sender?.destroy());
 
@@ -90,6 +110,8 @@
       statusTone = 'success';
       statusMessage = 'Готово!';
       textValue = '';
+      sender?.destroy();
+      sender = null;
     } catch (err) {
       statusTone = 'error';
       statusMessage = 'Не удалось отправить текст';
@@ -129,6 +151,8 @@
       statusTone = 'success';
       statusMessage = 'Готово!';
       selectedFile = null;
+      sender?.destroy();
+      sender = null;
     } catch (err) {
       statusTone = 'error';
       statusMessage = 'Не удалось отправить файл';
@@ -237,12 +261,21 @@
       {#if errorMessage}
         <div class="rounded-lg bg-slate-800 border border-red-500/30 text-red-300 px-4 py-3 flex items-start gap-2">
           <span>⚠️</span>
-          <div>
-            <p class="font-semibold">Ошибка</p>
-            <p class="text-sm">{errorMessage}</p>
-          </div>
-        </div>
-      {/if}
+      <div>
+        <p class="font-semibold">Ошибка</p>
+        <p class="text-sm">{errorMessage}</p>
+      </div>
+      <div class="ml-auto">
+        <button
+          class="bg-primary text-white px-3 py-2 rounded-lg shadow hover:bg-blue-500 disabled:opacity-60"
+          on:click={handleRetry}
+          type="button"
+        >
+          Повторить попытку
+        </button>
+      </div>
+    </div>
+  {/if}
 
       <div class="flex flex-wrap gap-3">
         <button

@@ -1,4 +1,5 @@
-const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+// Exclude visually ambiguous characters (O, 0) to reduce input mistakes
+const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
 
 export function generateCode(): string {
   let code = '';

@@ -9,6 +9,8 @@ interface ReceiverOptions {
   verbose?: boolean;
 }
 
+const DEFAULT_WEBRTC_TIMEOUT_MS = 90_000;
+
 export class WebRTCReceiver extends EventEmitter {
   private peer: SimplePeer.Instance | null = null;
 
@@ -39,7 +41,7 @@ export class WebRTCReceiver extends EventEmitter {
     }
   }
 
-  async start(timeoutMs = 60000) {
+  async start(timeoutMs = DEFAULT_WEBRTC_TIMEOUT_MS) {
     if (this.verbose) {
       // eslint-disable-next-line no-console
       console.log('[CLI] Waiting for PWA to join room...');
@@ -187,13 +189,15 @@ export class WebRTCReceiver extends EventEmitter {
     });
   }
 
-  waitForMetadata(timeoutMs = 30000) {
+  waitForMetadata(timeoutMs = 60000) {
+    const effectiveTimeout = timeoutMs ?? 60000;
+
     if (this.metadata) return Promise.resolve(this.metadata);
 
     return new Promise<Metadata>((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error('Timed out waiting for metadata'));
-      }, timeoutMs);
+      }, effectiveTimeout);
 
       this.metadataResolver = (meta) => {
         clearTimeout(timer);

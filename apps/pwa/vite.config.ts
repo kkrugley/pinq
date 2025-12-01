@@ -28,8 +28,8 @@ export default defineConfig({
         description: 'P2P file and text transfer',
         start_url: '/',
         display: 'standalone',
-        background_color: '#020617',
-        theme_color: '#3b82f6',
+        background_color: '#02091b',
+        theme_color: '#0f172a',
         icons: [
           {
             src: '/icons/icon-192.svg',

@@ -7,6 +7,7 @@ Pair-In Quick is a peer-to-peer (P2P) data transfer tool that makes it easy to s
 - Keep the experience simple: share a short pairing code, then send/receive immediately.
 - Avoid storing payloads on servers—only exchange signaling data for secure, direct connections.
 - Ship a consistent, TypeScript-first monorepo for the signaling server, CLI, and PWA.
+- Be resilient to Render cold starts with aggressive pre-warming and longer (90s) signaling timeouts.
 
 ## Architecture Overview
 Pair-In Quick is organized as a pnpm workspace with three core apps:
@@ -19,6 +20,7 @@ Key protocol highlights:
 - WebRTC DataChannel with ~16 KB chunks, DTLS encryption, STUN/TURN fallback.
 - Metadata message first (type/text/file details), followed by chunked payload and `EOF` marker.
 - Pairing codes expire after ~5 minutes to reduce misuse.
+- Pairing codes are 6 characters, excluding visually ambiguous `O`/`0`.
 
 ## Prerequisites
 - Node.js 18+
@@ -68,16 +70,16 @@ Run these from the repository root:
    ```bash
    pinq receive ABC123
    ```
-4. Open the PWA on your phone (local dev server or deployed URL).
+4. Open the PWA on your phone (local dev server or deployed URL). The PWA will pre-warm the signaling server while you enter the code.
 5. Enter/select a pairing code, choose text or a file (<50 MB), and send.
 6. The CLI displays text in the terminal and saves files to `~/Downloads` with progress for larger payloads.
 
 ## Deployment
 ### Signaling Server on Render
-1. Create a new Web Service from this repo (root can stay at `/` when using `render.yaml`, or `apps/signaling` if configuring manually).
-2. Environment: `PORT=3000`, `NODE_ENV=production`, `ALLOWED_ORIGIN=<your PWA domain>`.
-3. Build/start (if manual): `pnpm install && pnpm build --filter @pinq/signaling`, start `node apps/signaling/dist/index.js`.
-4. Note the Render URL (e.g., `https://pinq.onrender.com`) for clients.
+1. Use `render.yaml` in the repo root, or point Render to `apps/signaling` with build `pnpm install && pnpm --filter @pinq/signaling build` and start `node apps/signaling/dist/index.js`.
+2. Environment: `PORT=3000`, `NODE_ENV=production`, `ALLOWED_ORIGIN` (comma-separated list) for your PWA domains.
+3. Render free tier can sleep; clients pre-warm via `/health` and wait up to ~90s. Keep the health route exposed.
+4. Record the Render URL (e.g., `https://pinq.onrender.com`) and wire it into PWA (`VITE_SIGNALING_URL`) and CLI (`SIGNALING_URL`).
 
 ### PWA on Vercel
 1. Import the repo into Vercel and set the project root to `apps/pwa`.
@@ -85,13 +87,14 @@ Run these from the repository root:
 3. Set env `VITE_SIGNALING_URL=https://pinq.onrender.com` (or your self-hosted URL); add a custom domain if desired.
 
 ### CLI Publishing
-- **npm:**
+- **npm:** bump the version, build, then publish from `apps/cli`:
   ```bash
   cd apps/cli
+  pnpm build
   pnpm publish --access public
   ```
-- **Homebrew tap:** create a `homebrew-tap` repo with a `Formula/pinq.rb` that pulls the npm tarball, then `brew tap <user>/tap` and `brew install pinq`.
-- **Winget:** fork `microsoft/winget-pkgs`, add a manifest under `manifests/p/pinq/pinq-cli/`, and open a PR.
+- **Homebrew tap:** create a `homebrew-tap` repo with a `Formula/pinq.rb` that pulls the npm tarball, then `brew tap <user>/tap && brew install pinq`.
+- **Winget:** fork `microsoft/winget-pkgs`, add a manifest under `manifests/p/pinq/pinq-cli/`, and open a PR pointing to the npm tarball or a portable build.
 
 ## Configuration
 Update signaling endpoints in client code as needed:

@@ -1,52 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
-   viewBox="0 0 192 192"
-   role="img"
-   aria-labelledby="title desc"
+   width="512"
+   height="512"
+   viewBox="0 0 135.46667 135.46667"
    version="1.1"
    id="svg1"
-   sodipodi:docname="icon-192.svg"
-   inkscape:version="1.4.2 (ebf0e94, 2025-05-08)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
      id="defs1" />
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="2.9720582"
-     inkscape:cx="49.124206"
-     inkscape:cy="86.303828"
-     inkscape:window-width="1920"
-     inkscape:window-height="1009"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg1" />
-  <title
-     id="title">Pair-In Quick mark</title>
-  <desc
-     id="desc">Rounded square with interlocking arrows forming the letters P and Q</desc>
-  <rect
-     x="8"
-     y="8"
-     width="176"
-     height="176"
-     rx="32"
-     fill="#2563eb"
-     id="rect1"
-     style="display:inline" />
-  <path
-     d="m 52.935407,27.943 h 60.228073 c 24.63875,0 43.80223,19.163477 43.80223,43.802233 0,24.638756 -19.16348,43.802237 -43.80223,43.802237 H 85.787081 L 118.63876,148.39914 96.73764,170.30026 31.03429,104.59691 96.73764,38.893558 118.63876,60.794675 85.787081,93.646349 h 27.376399 c 9.58174,0 16.42583,-6.844099 16.42583,-16.425837 0,-9.581738 -6.84409,-16.425837 -16.42583,-16.425837 H 52.935407 Z"
-     fill="#eff6ff"
-     id="path1"
-     style="stroke-width:1.36882" />
+  <g
+     id="layer1">
+    <rect
+       x="0"
+       y="0"
+       width="135.46667"
+       height="135.46667"
+       rx="24.630306"
+       fill="#2563eb"
+       id="rect1"
+       style="display:inline;stroke-width:0.769697" />
+    <path
+       d="m 34.586669,15.350076 h 46.357353 c 18.964357,0 33.714458,14.75008 33.714458,33.714443 0,18.964395 -14.750101,33.714478 -33.714458,33.714478 H 59.872489 L 85.158339,108.06481 68.301113,124.92204 17.729446,74.350367 68.301113,23.778702 85.158339,40.635924 59.872489,65.921742 h 21.071533 c 7.375048,0 12.642916,-5.267869 12.642916,-12.642909 0,-7.37504 -5.267868,-12.642909 -12.642916,-12.642909 H 34.586669 Z"
+       fill="#eff6ff"
+       id="path1"
+       style="stroke-width:1.05357" />
+  </g>
 </svg>

@@ -4,6 +4,9 @@ import type { SignalPayload } from '../types';
 type SignalHandler = (payload: SignalPayload) => void;
 type PeerJoinedHandler = (payload: { peerId: string; code: string }) => void;
 
+const DEFAULT_SIGNALING_TIMEOUT_MS = 90_000;
+const PREWARM_TIMEOUT_MS = 70_000;
+
 export class SignalingClient {
   private socket: Socket | null = null;
 
@@ -48,7 +51,7 @@ export class SignalingClient {
     console.log('[PWA Signaling] Pre-warming server...');
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 50000);
+      const timer = setTimeout(() => controller.abort(), PREWARM_TIMEOUT_MS);
 
       const response = await fetch(`${this.url}/health`, {
         signal: controller.signal,
@@ -67,14 +70,16 @@ export class SignalingClient {
     }
   }
 
-  async connect(timeoutMs = 60000): Promise<void> {
+  async connect(timeoutMs = DEFAULT_SIGNALING_TIMEOUT_MS): Promise<void> {
     if (this.socket?.connected) return;
+
+    const effectiveTimeout = timeoutMs ?? DEFAULT_SIGNALING_TIMEOUT_MS;
 
     await new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         cleanup();
         reject(new Error('Не удалось подключиться к серверу (возможно, сервер спит)'));
-      }, timeoutMs);
+      }, effectiveTimeout);
 
       const handleConnect = () => {
         // eslint-disable-next-line no-console
@@ -127,7 +132,8 @@ export class SignalingClient {
         transports: ['polling', 'websocket'],
         upgrade: true,
         forceNew: true,
-        timeout: 50000,
+        timeout: effectiveTimeout,
+        reconnectionAttempts: 5,
       });
 
       // socket.io-client has an internal ack timeout helper that assumes the
