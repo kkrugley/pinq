@@ -1,12 +1,16 @@
 import SimplePeer, { type SignalData } from 'simple-peer';
+import { ICE_SERVERS } from '@pinq/shared';
 import type { Metadata } from '../types';
 import { chunkFile, chunkText, CHUNK_SIZE } from '../utils/fileChunker';
 import { SignalingClient } from './signaling';
 
 export class WebRTCSender {
   private peer: SimplePeer.Instance | null = null;
+
   private signaling: SignalingClient;
+
   private connectionPromise: Promise<void> | null = null;
+
   private cleanupSignalHandler: (() => void) | null = null;
 
   constructor(signalingUrl: string, private code: string) {
@@ -23,90 +27,67 @@ export class WebRTCSender {
       trickle: true,
       wrtc: undefined,
       config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun2.l.google.com:19302' },
-          {
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credential: 'openrelayproject',
-          },
-        ],
+        iceServers: ICE_SERVERS,
       },
     });
+    // eslint-disable-next-line no-console
     console.log('[PWA] Creating SimplePeer as initiator');
 
     peer.on('signal', (data: SignalData) => {
+      // eslint-disable-next-line no-console
       console.log('[PWA] Sending signal:', (data as { type?: string }).type || 'candidate');
       this.signaling.sendSignal(data);
     });
     peer.on('connect', () => {
+      // eslint-disable-next-line no-console
       console.log('[PWA] ✅ WebRTC connected!');
     });
     peer.on('close', () => {
+      // eslint-disable-next-line no-console
       console.log('[PWA] ❌ WebRTC closed');
     });
     peer.on('error', (err) => {
+      // eslint-disable-next-line no-console
       console.error('[PWA] ❌ Peer error:', err);
     });
     this.peer = peer;
     return peer;
   }
 
-  async connect(onStatus?: (status: string) => void, timeoutMs = 30000): Promise<void> {
+  async connect(onStatus?: (status: string) => void, timeoutMs = 60000): Promise<void> {
     if (!this.connectionPromise) {
       this.connectionPromise = (async () => {
-        onStatus?.('Warming up signaling...');
+        onStatus?.('Пробуждение сервера...');
         await this.signaling.prewarm();
-        onStatus?.('Joining room...');
-        console.log('[PWA] Joining room with code:', this.code);
+
+        onStatus?.('Подключение к серверу...');
         await this.signaling.connect();
+        // eslint-disable-next-line no-console
+        console.log('[PWA] Joined room with code:', this.code);
 
+        onStatus?.('Создание WebRTC соединения...');
         const peer = this.createPeer();
-        this.cleanupSignalHandler = this.signaling.onSignal((payload) => peer.signal(payload.signal));
 
-        onStatus?.('Waiting for receiver...');
+        this.cleanupSignalHandler = this.signaling.onSignal((payload) =>
+          peer.signal(payload.signal),
+        );
+
+        onStatus?.('Ожидание компьютера...');
 
         await new Promise<void>((resolve, reject) => {
-          const removeListener = (event: string, handler: (...args: unknown[]) => void) => {
-            if (typeof (peer as unknown as { off?: typeof peer.off }).off === 'function') {
-              (peer as unknown as { off: typeof peer.off }).off(event, handler);
-            } else if (
-              typeof (peer as unknown as { removeListener?: typeof peer.removeListener }).removeListener === 'function'
-            ) {
-              (peer as unknown as { removeListener: typeof peer.removeListener }).removeListener(event, handler);
-            } else if (
-              typeof (peer as unknown as { removeEventListener?: typeof peer.removeEventListener }).removeEventListener ===
-              'function'
-            ) {
-              (peer as unknown as { removeEventListener: typeof peer.removeEventListener }).removeEventListener(
-                event,
-                handler,
-              );
-            }
-          };
-
           const timer = setTimeout(() => {
-            cleanup();
             reject(new Error('Не удалось дождаться подключения компьютера'));
           }, timeoutMs);
 
-          const handleConnect = () => {
-            cleanup();
-            resolve();
-          };
-          const handleError = (err: Error) => {
-            cleanup();
-            reject(err);
-          };
-          const cleanup = () => {
+          peer.once('connect', () => {
             clearTimeout(timer);
-            removeListener('connect', handleConnect);
-            removeListener('error', handleError);
-          };
-          peer.once('connect', handleConnect);
-          peer.once('error', handleError);
+            resolve();
+          });
+
+          peer.once('error', (err) => {
+            clearTimeout(timer);
+            reject(err);
+          });
         });
       })();
     }
@@ -123,20 +104,6 @@ export class WebRTCSender {
 
   private waitForAck(timeoutMs = 10000) {
     const peer = this.getPeerOrThrow();
-    const removeListener = (event: string, handler: (...args: unknown[]) => void) => {
-      if (typeof (peer as unknown as { off?: typeof peer.off }).off === 'function') {
-        (peer as unknown as { off: typeof peer.off }).off(event, handler);
-      } else if (
-        typeof (peer as unknown as { removeListener?: typeof peer.removeListener }).removeListener === 'function'
-      ) {
-        (peer as unknown as { removeListener: typeof peer.removeListener }).removeListener(event, handler);
-      } else if (
-        typeof (peer as unknown as { removeEventListener?: typeof peer.removeEventListener }).removeEventListener ===
-        'function'
-      ) {
-        (peer as unknown as { removeEventListener: typeof peer.removeEventListener }).removeEventListener(event, handler);
-      }
-    };
 
     return new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -164,9 +131,9 @@ export class WebRTCSender {
 
       const cleanup = () => {
         clearTimeout(timer);
-        removeListener('data', handleData);
-        removeListener('error', handleError);
-        removeListener('close', handleClose);
+        peer.off('data', handleData);
+        peer.off('error', handleError);
+        peer.off('close', handleClose);
       };
 
       peer.on('data', handleData);

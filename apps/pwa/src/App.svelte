@@ -51,12 +51,16 @@
       await sender.connect((status) => {
         statusMessage = status;
         statusTone = status.toLowerCase().includes('error') ? 'error' : 'idle';
+
+        if (status.includes('Пробуждение')) {
+          statusMessage = 'Пробуждаем сервер... (может занять до минуты при первом запуске)';
+        }
       });
       statusTone = 'success';
       statusMessage = 'Connected. Ready to transfer.';
     } catch (err) {
       statusTone = 'error';
-      statusMessage = 'Ошибка подключения';
+      statusMessage = err instanceof Error ? err.message : 'Ошибка подключения';
       throw err;
     }
   }
@@ -214,9 +218,18 @@
       {#if successMessage}
         <div class="rounded-lg bg-slate-800 border border-green-500/30 text-green-300 px-4 py-3 flex items-start gap-2">
           <span>✅</span>
-          <div>
-            <p class="font-semibold">Успех</p>
-            <p class="text-sm">{successMessage}</p>
+          <div class="flex-1 space-y-2">
+            <div>
+              <p class="font-semibold">Успех</p>
+              <p class="text-sm">{successMessage}</p>
+            </div>
+            <button
+              class="bg-primary text-white px-3 py-2 rounded-lg shadow hover:bg-blue-500 disabled:opacity-60"
+              on:click={resetSession}
+              type="button"
+            >
+              Отправить ещё
+            </button>
           </div>
         </div>
       {/if}

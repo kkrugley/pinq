@@ -38,6 +38,7 @@ function parseAllowedOrigins(raw?: string | string[]) {
 }
 
 export function createSignalingServer(options: SignalingServerOptions = {}) {
+  const startTime = Date.now();
   const allowedOrigins = parseAllowedOrigins(
     options.allowedOrigin || process.env.ALLOWED_ORIGINS || process.env.ALLOWED_ORIGIN || '*',
   );
@@ -126,7 +127,10 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
       socket.to(code).emit('peer-disconnected', { peerId: socket.id, code });
 
       if (state.sockets.size === 0) {
-        clearRoom(code);
+        clearTimeout(state.timer);
+        rooms.delete(code);
+        // eslint-disable-next-line no-console
+        console.log(`[SIGNAL] Room ${code} closed (empty)`);
       } else {
         scheduleRoomExpiry(code);
       }
@@ -149,7 +153,8 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
   app.use(express.json());
 
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
+    const uptimeSeconds = Math.floor((Date.now() - startTime) / 1000);
+    res.json({ status: 'ok', uptime: `${uptimeSeconds}s`, rooms: rooms.size });
   });
 
   const port = options.port || Number(process.env.PORT) || 3000;
@@ -162,6 +167,8 @@ export function createSignalingServer(options: SignalingServerOptions = {}) {
       server.listen(port, () => {
         // eslint-disable-next-line no-console
         console.log(`[signaling] listening on port ${port}`);
+        // eslint-disable-next-line no-console
+        console.log(`[signaling] started at ${new Date(startTime).toISOString()}`);
       });
       return server;
     },
