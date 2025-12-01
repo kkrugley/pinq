@@ -16,7 +16,7 @@ const ensureProcess = () => {
       queueMicrotask(() => callback(...args)),
   };
 
-  (globalThis as typeof globalThis & { process: ProcessPolyfill }).process = processPolyfill;
+  Reflect.set(globalThis, 'process', processPolyfill);
   return processPolyfill;
 };
 
@@ -29,8 +29,7 @@ const ensureBuffer = () => {
 
 const ensureGlobal = () => {
   if (typeof globalThis.global === 'undefined') {
-    // @ts-expect-error -- align with Node's global variable
-    globalThis.global = globalThis;
+    (globalThis as typeof globalThis & { global: typeof globalThis }).global = globalThis;
   }
 };
 

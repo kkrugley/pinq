@@ -1,10 +1,14 @@
 export const CHUNK_SIZE = 16 * 1024;
 
-export function chunkText(text: string, chunkSize = CHUNK_SIZE): string[] {
-  const chunks: string[] = [];
-  for (let i = 0; i < text.length; i += chunkSize) {
-    chunks.push(text.slice(i, i + chunkSize));
+export function chunkText(text: string, chunkSize = CHUNK_SIZE): Uint8Array[] {
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(text);
+  const chunks: Uint8Array[] = [];
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    chunks.push(bytes.slice(i, i + chunkSize));
   }
+
   return chunks;
 }
 

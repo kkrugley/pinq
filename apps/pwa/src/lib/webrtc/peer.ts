@@ -41,10 +41,14 @@ export class WebRTCSender {
       console.log('[PWA] ✅ WebRTC connected!');
     });
     peer.on('close', () => {
+      this.cleanupSignalHandler?.();
+      this.cleanupSignalHandler = null;
       // eslint-disable-next-line no-console
       console.log('[PWA] ❌ WebRTC closed');
     });
     peer.on('error', (err: Error) => {
+      this.cleanupSignalHandler?.();
+      this.cleanupSignalHandler = null;
       // eslint-disable-next-line no-console
       console.error('[PWA] ❌ Peer error:', err);
     });
@@ -54,13 +58,32 @@ export class WebRTCSender {
 
   private attachSignalHandler(peer: SimplePeerInstance) {
     this.cleanupSignalHandler?.();
-    this.cleanupSignalHandler = this.signaling.onSignal((payload) => peer.signal(payload.signal));
 
-    peer.on('signal', (data: SignalData) => {
+    const peerWithState = peer as SimplePeerInstance & { destroyed?: boolean };
+
+    const handleInboundSignal = (payload: { signal: SignalData }) => {
+      if (peerWithState.destroyed) return;
+      try {
+        peerWithState.signal(payload.signal);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[PWA] Ignoring signal on destroyed peer', err);
+      }
+    };
+
+    const handleOutboundSignal = (data: SignalData) => {
+      if (peerWithState.destroyed) return;
       // eslint-disable-next-line no-console
       console.log('[PWA] Sending signal:', (data as { type?: string }).type || 'candidate');
       this.signaling.sendSignal(data);
-    });
+    };
+
+    peerWithState.on('signal', handleOutboundSignal);
+    const cleanupInbound = this.signaling.onSignal(handleInboundSignal);
+    this.cleanupSignalHandler = () => {
+      cleanupInbound?.();
+      peerWithState.off?.('signal', handleOutboundSignal);
+    };
   }
 
   async connect(onStatus?: (status: string) => void, timeoutMs = 60000): Promise<void> {
@@ -193,7 +216,7 @@ export class WebRTCSender {
     peer.send(JSON.stringify(metadata));
 
     const chunks = chunkText(text, CHUNK_SIZE);
-    const total = text.length || 1;
+    const total = chunks.reduce((acc, chunk) => acc + chunk.length, 0) || 1;
     let sent = 0;
 
     for (const chunk of chunks) {
