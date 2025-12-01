@@ -15,7 +15,7 @@
   let pairingCode = generateCode();
   let sender: WebRTCSender | null = null;
   let mode: Mode = 'idle';
-  let statusMessage = 'Ready to pair your desktop with a 6-digit code.';
+  let statusMessage = 'Ready to pair your desktop with a 6-character code.';
   let statusTone: 'idle' | 'success' | 'error' = 'idle';
   let textValue = '';
   let selectedFile: File | null = null;
@@ -41,7 +41,7 @@
     sender = null;
     pairingCode = generateCode();
     mode = 'idle';
-    statusMessage = 'Ready to pair your desktop with a 6-digit code.';
+    statusMessage = 'Ready to pair your desktop with a 6-character code.';
     statusTone = 'idle';
     textValue = '';
     selectedFile = null;
@@ -72,22 +72,22 @@
         statusMessage = status;
         statusTone = status.toLowerCase().includes('error') ? 'error' : 'idle';
 
-        if (status.includes('Пробуждение')) {
-          statusMessage = 'Пробуждаем сервер... (может занять до минуты при первом запуске)';
+        if (status.toLowerCase().includes('warming')) {
+          statusMessage = 'Warming up signaling... (can take up to a minute on first start)';
         }
       });
       statusTone = 'success';
       statusMessage = 'Connected. Ready to transfer.';
     } catch (err) {
       statusTone = 'error';
-      statusMessage = err instanceof Error ? err.message : 'Ошибка подключения';
+      statusMessage = err instanceof Error ? err.message : 'Connection failed';
       throw err;
     }
   }
 
   async function sendText() {
     if (!textValue.trim()) {
-      errorMessage = 'Введите текст для отправки.';
+      errorMessage = 'Enter text to send.';
       return;
     }
 
@@ -95,27 +95,27 @@
     progress = 0;
     successMessage = '';
     errorMessage = '';
-    activePayloadLabel = 'Отправка текста';
-    statusMessage = 'Подключение и отправка текста...';
+    activePayloadLabel = 'Sending text';
+    statusMessage = 'Connecting and sending text...';
 
     try {
       await ensureSender();
-      statusMessage = 'Отправка текста...';
+      statusMessage = 'Sending text...';
       await sender?.sendText(textValue, (percent) => {
         progress = percent;
       });
-      statusMessage = 'Ожидаем подтверждения от компьютера...';
+      statusMessage = 'Waiting for desktop to confirm...';
       statusTone = 'idle';
-      successMessage = 'Текст доставлен на компьютер.';
+      successMessage = 'Text delivered to desktop.';
       statusTone = 'success';
-      statusMessage = 'Готово!';
+      statusMessage = 'Done!';
       textValue = '';
       sender?.destroy();
       sender = null;
     } catch (err) {
       statusTone = 'error';
-      statusMessage = 'Не удалось отправить текст';
-      errorMessage = err instanceof Error ? err.message : 'Ошибка отправки.';
+      statusMessage = 'Failed to send text';
+      errorMessage = err instanceof Error ? err.message : 'Send error.';
     } finally {
       sending = false;
     }
@@ -123,12 +123,12 @@
 
   async function sendFile() {
     if (!selectedFile) {
-      errorMessage = 'Выберите файл для отправки.';
+      errorMessage = 'Pick a file to send.';
       return;
     }
 
     if (selectedFile.size > 50 * 1024 * 1024) {
-      errorMessage = 'Максимальный размер файла 50 МБ.';
+      errorMessage = 'Max file size is 50 MB.';
       return;
     }
 
@@ -137,26 +137,26 @@
     successMessage = '';
     errorMessage = '';
     activePayloadLabel = selectedFile.name;
-    statusMessage = 'Подключение и отправка файла...';
+    statusMessage = 'Connecting and sending file...';
 
     try {
       await ensureSender();
-      statusMessage = 'Отправка файла...';
+      statusMessage = 'Sending file...';
       await sender?.sendFile(selectedFile, (percent) => {
         progress = percent;
       });
-      statusMessage = 'Ожидаем подтверждения от компьютера...';
+      statusMessage = 'Waiting for desktop to confirm...';
       statusTone = 'idle';
-      successMessage = `${selectedFile.name} отправлен.`;
+      successMessage = `${selectedFile.name} sent.`;
       statusTone = 'success';
-      statusMessage = 'Готово!';
+      statusMessage = 'Done!';
       selectedFile = null;
       sender?.destroy();
       sender = null;
     } catch (err) {
       statusTone = 'error';
-      statusMessage = 'Не удалось отправить файл';
-      errorMessage = err instanceof Error ? err.message : 'Ошибка отправки файла.';
+      statusMessage = 'Failed to send file';
+      errorMessage = err instanceof Error ? err.message : 'File send error.';
     } finally {
       sending = false;
     }
@@ -167,13 +167,13 @@
   <div class="max-w-3xl mx-auto px-6 py-10 space-y-8">
     <header class="space-y-2">
       <p class="text-sm text-blue-300 uppercase tracking-[0.2em]">Pair-In Quick</p>
-      <h1 class="text-4xl font-bold">P2P передача текста и файлов</h1>
-      <p class="text-slate-300">Сгенерируйте код, поделитесь им в CLI и отправьте данные напрямую по WebRTC.</p>
+      <h1 class="text-4xl font-bold">P2P text and file transfer</h1>
+      <p class="text-slate-300">Generate a code, share it in the CLI, and send data directly via WebRTC.</p>
     </header>
 
     <section class="bg-slate-900 border border-slate-800 rounded-2xl shadow-lg p-6 space-y-6">
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <CodeDisplay code={pairingCode} on:copied={() => (copyNotice = 'Код скопирован!')} />
+        <CodeDisplay code={pairingCode} on:copied={() => (copyNotice = 'Code copied!')} />
         {#if copyNotice}
           <span class="text-xs text-slate-400">{copyNotice}</span>
         {/if}
@@ -187,26 +187,26 @@
           on:click={() => (mode = 'text')}
           disabled={sending}
         >
-          📄 Отправить текст
+          📄 Send text
         </button>
         <button
           class="w-full bg-slate-800 text-white py-3 rounded-xl font-semibold shadow hover:bg-slate-700 border border-slate-700 disabled:opacity-60"
           on:click={() => (mode = 'file')}
           disabled={sending}
         >
-          📁 Отправить файл
+          📁 Send file
         </button>
       </div>
 
       {#if mode === 'text'}
         <div class="space-y-3">
-          <TextInput bind:value={textValue} disabled={sending} placeholder="Введите текст для отправки на компьютер" />
+          <TextInput bind:value={textValue} disabled={sending} placeholder="Enter text to send to desktop" />
           <button
             class="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-blue-500 disabled:opacity-60"
             on:click={sendText}
             disabled={sending}
           >
-            {sending ? 'Отправка...' : 'Отправить текст'}
+            {sending ? 'Sending...' : 'Send text'}
           </button>
         </div>
       {/if}
@@ -218,14 +218,14 @@
             <div class="flex items-center justify-between bg-slate-800 rounded-lg px-4 py-3">
               <div>
                 <p class="text-sm font-semibold">{selectedFile.name}</p>
-                <p class="text-xs text-slate-400">{(selectedFile.size / (1024 * 1024)).toFixed(2)} МБ</p>
+                <p class="text-xs text-slate-400">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
               </div>
               <button
                 class="bg-primary text-white px-3 py-2 rounded-lg shadow hover:bg-blue-500 disabled:opacity-60"
                 on:click={sendFile}
                 disabled={sending}
               >
-                {sending ? 'Отправка...' : 'Отправить'}
+                {sending ? 'Sending...' : 'Send'}
               </button>
             </div>
           {/if}
@@ -234,7 +234,7 @@
 
       {#if sending}
         <div class="space-y-2">
-          <p class="text-sm text-slate-300">{activePayloadLabel || 'Передача данных...'}</p>
+          <p class="text-sm text-slate-300">{activePayloadLabel || 'Transferring...'}</p>
           <ProgressBar value={progress} />
         </div>
       {/if}
@@ -244,7 +244,7 @@
           <span>✅</span>
           <div class="flex-1 space-y-2">
             <div>
-              <p class="font-semibold">Успех</p>
+              <p class="font-semibold">Success</p>
               <p class="text-sm">{successMessage}</p>
             </div>
             <button
@@ -252,7 +252,7 @@
               on:click={resetSession}
               type="button"
             >
-              Отправить ещё
+              Send another
             </button>
           </div>
         </div>
@@ -262,7 +262,7 @@
         <div class="rounded-lg bg-slate-800 border border-red-500/30 text-red-300 px-4 py-3 flex items-start gap-2">
           <span>⚠️</span>
       <div>
-        <p class="font-semibold">Ошибка</p>
+        <p class="font-semibold">Error</p>
         <p class="text-sm">{errorMessage}</p>
       </div>
       <div class="ml-auto">
@@ -271,7 +271,7 @@
           on:click={handleRetry}
           type="button"
         >
-          Повторить попытку
+          Try again
         </button>
       </div>
     </div>
@@ -283,7 +283,7 @@
           type="button"
           on:click={resetSession}
         >
-          Сбросить код
+          Reset code
         </button>
         <a
           class="text-sm text-slate-400"
@@ -291,7 +291,7 @@
           target="_blank"
           rel="noreferrer"
         >
-          Помощь и исходники
+          Help & source code
         </a>
       </div>
     </section>

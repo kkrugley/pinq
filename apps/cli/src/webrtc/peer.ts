@@ -92,7 +92,7 @@ export class WebRTCReceiver extends EventEmitter {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         cleanup();
-        reject(new Error('PWA не подключилась к комнате (возможно, сервер не проснулся)'));
+        reject(new Error('PWA did not join the room (signaling may still be waking up)'));
       }, timeoutMs);
 
       const handlePeerJoined = (payload: { peerId: string; code: string }) => {
@@ -178,7 +178,7 @@ export class WebRTCReceiver extends EventEmitter {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         cleanup();
-        reject(new Error('Не получен offer от PWA'));
+        reject(new Error('Did not receive offer from PWA'));
       }, timeoutMs);
 
       const handleSignal = (payload: { signal: SignalData }) => {

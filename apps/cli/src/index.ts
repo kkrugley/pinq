@@ -7,7 +7,7 @@ import { ReceiveOptions } from './types.js';
 
 async function promptCode(): Promise<string> {
   const rl = readline.createInterface({ input, output });
-  const answer = (await rl.question('Введите 6-значный код из PWA: ')).trim().toUpperCase();
+  const answer = (await rl.question('Enter the 6-character code from PWA: ')).trim().toUpperCase();
   rl.close();
   return answer;
 }
@@ -16,7 +16,7 @@ async function runReceive(code: string | undefined, opts: ReceiveOptions) {
   const finalCode = code?.trim().toUpperCase() || (await promptCode());
   if (!finalCode) {
     // eslint-disable-next-line no-console
-    console.error('Код не введён, выхожу.');
+    console.error('Code is empty, exiting.');
     process.exit(1);
   }
 
@@ -33,25 +33,25 @@ const program = new Command();
 
 program
   .name('pinq')
-  .description('Pair-In Quick CLI для приёма текста и файлов по WebRTC')
+  .description('Pair-In Quick CLI for receiving text and files over WebRTC')
   .version('0.1.0')
-  .argument('[code]', 'код из PWA; если не передан — будет запрос')
-  .option('--path <dir>', 'директория сохранения (по умолчанию ~/Downloads)')
-  .option('--confirm', 'спрашивать подтверждение перед приёмом файла')
-  .option('--verbose', 'подробный лог')
+  .argument('[code]', 'code from PWA; if omitted you will be prompted')
+  .option('--path <dir>', 'save directory (default: ~/Downloads)')
+  .option('--confirm', 'ask confirmation before receiving a file')
+  .option('--verbose', 'verbose logging')
   .action((code: string | undefined, opts: ReceiveOptions) => {
     // eslint-disable-next-line no-console
-    console.log('🔥 Pair-In Quick — приём данных без облака');
+    console.log('🔥 Pair-In Quick — receive data without the cloud');
     return runReceive(code, opts);
   });
 
 program
   .command('receive')
-  .description('Явно указать код для приёма')
-  .argument('<code>', 'код из PWA')
-  .option('--path <dir>', 'директория сохранения (по умолчанию ~/Downloads)')
-  .option('--confirm', 'спрашивать подтверждение перед приёмом файла')
-  .option('--verbose', 'подробный лог')
+  .description('Explicitly provide the code to receive')
+  .argument('<code>', 'code from PWA')
+  .option('--path <dir>', 'save directory (default: ~/Downloads)')
+  .option('--confirm', 'ask confirmation before receiving a file')
+  .option('--verbose', 'verbose logging')
   .action((code: string, opts: ReceiveOptions) => runReceive(code, opts));
 
 program.parseAsync(process.argv);

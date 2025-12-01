@@ -78,7 +78,7 @@ export class SignalingClient {
     await new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         cleanup();
-        reject(new Error('Не удалось подключиться к серверу (возможно, сервер спит)'));
+        reject(new Error('Failed to connect to signaling (server may be asleep)'));
       }, effectiveTimeout);
 
       const handleConnect = () => {
@@ -97,23 +97,23 @@ export class SignalingClient {
 
       const handleRoomFull = () => {
         cleanup();
-        reject(new Error('Комната уже занята другим устройством'));
+        reject(new Error('Room is already occupied by another device'));
       };
 
       const handleRoomExpired = (payload: { code: string }) => {
         if (payload.code !== this.code) return;
         cleanup();
-        reject(new Error('Срок действия кода истёк. Сбросьте код и попробуйте снова.'));
+        reject(new Error('Code expired. Reset the code and try again.'));
       };
 
       const handleRoomNotFound = () => {
         cleanup();
-        reject(new Error('Комната не найдена. Попробуйте с новым кодом.'));
+        reject(new Error('Room not found. Try a new code.'));
       };
 
       const handleConnectError = (err: unknown) => {
         cleanup();
-        reject(err instanceof Error ? err : new Error('Не удалось подключиться к серверу сигналинга'));
+        reject(err instanceof Error ? err : new Error('Failed to connect to signaling server'));
       };
 
       const cleanup = () => {

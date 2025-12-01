@@ -24,7 +24,7 @@ export class WebRTCSender {
 
   private createPeer() {
     if (typeof window === 'undefined' || !window.RTCPeerConnection) {
-      throw new Error('WebRTC не поддерживается в этом браузере');
+      throw new Error('WebRTC is not supported in this browser');
     }
 
     const peer = new SimplePeer({
@@ -92,15 +92,15 @@ export class WebRTCSender {
   async connect(onStatus?: (status: string) => void, timeoutMs = CONNECT_TIMEOUT_MS): Promise<void> {
     if (!this.connectionPromise) {
       this.connectionPromise = (async () => {
-        onStatus?.('Пробуждение сервера...');
+        onStatus?.('Warming up signaling...');
         await this.signaling.prewarm();
 
-        onStatus?.('Подключение к серверу...');
+        onStatus?.('Connecting to signaling...');
         await this.signaling.connect();
         // eslint-disable-next-line no-console
         console.log('[PWA] Joined room with code:', this.code);
 
-        onStatus?.('Создание WebRTC соединения...');
+        onStatus?.('Creating WebRTC connection...');
         await new Promise<void>((resolve, reject) => {
           let peer: SimplePeerInstance;
           let cleanupConnection: (() => void) | null = null;
@@ -118,7 +118,7 @@ export class WebRTCSender {
 
             const timer = setTimeout(() => {
               cleanupAll();
-              reject(new Error('Не удалось дождаться подключения компьютера'));
+              reject(new Error('Desktop did not connect in time'));
             }, timeoutMs);
 
             const handleConnect = () => {
@@ -133,7 +133,7 @@ export class WebRTCSender {
 
             const handleClose = () => {
               cleanupAll();
-              reject(new Error('Соединение закрыто до установления'));
+              reject(new Error('Connection closed before it was established'));
             };
 
             cleanupConnection = () => {
@@ -154,7 +154,7 @@ export class WebRTCSender {
           });
 
           startConnectionAttempt();
-          onStatus?.('Ожидание компьютера...');
+          onStatus?.('Waiting for desktop...');
         });
       })();
     }
@@ -164,7 +164,7 @@ export class WebRTCSender {
 
   private getPeerOrThrow() {
     if (!this.peer) {
-      throw new Error('Соединение с компьютером не установлено');
+      throw new Error('Connection to desktop is not established');
     }
     return this.peer;
   }
@@ -175,7 +175,7 @@ export class WebRTCSender {
     return new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         cleanup();
-        reject(new Error('Не дождались подтверждения от компьютера'));
+        reject(new Error('Timed out waiting for desktop confirmation'));
       }, timeoutMs);
 
       const handleData = (data: Uint8Array | string) => {
@@ -193,7 +193,7 @@ export class WebRTCSender {
 
       const handleClose = () => {
         cleanup();
-        reject(new Error('Соединение закрыто до подтверждения'));
+        reject(new Error('Connection closed before confirmation'));
       };
 
       const cleanup = () => {

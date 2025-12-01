@@ -40,7 +40,7 @@ async function promptConfirm(question: string, defaultYes = false) {
   rl.close();
   const normalized = answer.trim().toLowerCase();
   if (!normalized) return defaultYes;
-  return ['y', 'yes', 'д', 'да'].includes(normalized);
+  return ['y', 'yes'].includes(normalized);
 }
 
 function handleTextReception(receiver: WebRTCReceiver) {
@@ -78,7 +78,7 @@ function handleTextReception(receiver: WebRTCReceiver) {
       if (finished) return;
       finished = true;
       cleanup();
-      reject(new Error('Соединение закрыто до завершения передачи'));
+      reject(new Error('Connection closed before transfer completed'));
     };
 
     const onData = (chunk: Buffer | string) => {
@@ -138,7 +138,7 @@ function handleFileReception(receiver: WebRTCReceiver, metadata: Metadata, targe
 
     const onError = (err: Error) => fail(err);
 
-    const onClose = () => fail(new Error('Соединение закрыто до завершения передачи'));
+    const onClose = () => fail(new Error('Connection closed before transfer completed'));
 
     const onData = (chunk: Buffer | string) => {
       const isEof =
@@ -190,27 +190,27 @@ export async function receiveCommand(code: string, options: ReceiveOptions) {
   const signaling = new SignalingClient(SIGNALING_URL, { verbose: options.verbose });
   const receiver = new WebRTCReceiver(normalizedCode, signaling, { verbose: options.verbose });
 
-  const connectSpinner = createSpinner('Пробуждение сервера и подключение...', options.verbose);
+  const connectSpinner = createSpinner('Waking signaling and connecting...', options.verbose);
   try {
     await prewarm(SIGNALING_URL, options.verbose);
     await signaling.join(normalizedCode);
-    connectSpinner.succeed('Подключились к серверу, ожидаем телефон...');
+    connectSpinner.succeed('Connected to signaling, waiting for phone...');
   } catch (err) {
     connectSpinner.fail((err as Error).message);
     throw err;
   }
 
   try {
-    const peerSpinner = createSpinner('Ожидание подключения телефона...', options.verbose);
+    const peerSpinner = createSpinner('Waiting for phone to connect...', options.verbose);
     try {
       await receiver.start();
-      peerSpinner.succeed('Телефон подключен');
+      peerSpinner.succeed('Phone connected');
     } catch (err) {
       peerSpinner.fail((err as Error).message);
       throw err;
     }
 
-    const metadataSpinner = createSpinner('Ожидаем данные от телефона...', options.verbose);
+    const metadataSpinner = createSpinner('Waiting for data from phone...', options.verbose);
     let metadata: Metadata;
     try {
       metadata = await receiver.waitForMetadata();
