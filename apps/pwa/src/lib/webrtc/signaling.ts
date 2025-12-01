@@ -5,7 +5,9 @@ type SignalHandler = (payload: SignalPayload) => void;
 
 export class SignalingClient {
   private socket: Socket | null = null;
+
   private readonly code: string;
+
   private readonly signalHandlers = new Set<SignalHandler>();
 
   constructor(private url: string, code: string) {
@@ -13,28 +15,48 @@ export class SignalingClient {
   }
 
   async prewarm(): Promise<void> {
+    // eslint-disable-next-line no-console
+    console.log('[PWA Signaling] Pre-warming server...');
     try {
-      await fetch(`${this.url}/health`, { cache: 'no-store' });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 50000);
+
+      const response = await fetch(`${this.url}/health`, {
+        signal: controller.signal,
+        cache: 'no-store',
+      });
+
+      clearTimeout(timer);
+
+      if (response.ok) {
+        // eslint-disable-next-line no-console
+        console.log('[PWA Signaling] Server is warm');
+      }
     } catch (err) {
-      // Best-effort warmup; ignore network errors
+      // eslint-disable-next-line no-console
+      console.warn('[PWA Signaling] Pre-warm failed, server may be cold:', err);
     }
   }
 
-  async connect(timeoutMs = 30000): Promise<void> {
+  async connect(timeoutMs = 60000): Promise<void> {
     if (this.socket?.connected) return;
 
     await new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
         cleanup();
-        reject(new Error('Не удалось подключиться к серверу сигналинга'));
+        reject(new Error('Не удалось подключиться к серверу (возможно, сервер спит)'));
       }, timeoutMs);
 
       const handleConnect = () => {
+        // eslint-disable-next-line no-console
+        console.log('[PWA Signaling] Connected, joining room');
         this.socket?.emit('join-room', { code: this.code, role: 'creator' });
       };
 
       const handleJoined = (payload: { code: string }) => {
         if (payload.code !== this.code) return;
+        // eslint-disable-next-line no-console
+        console.log('[PWA Signaling] Room joined');
         cleanup();
         resolve();
       };
@@ -62,6 +84,7 @@ export class SignalingClient {
 
       const cleanup = () => {
         clearTimeout(timer);
+        // eslint-disable-next-line no-console
         console.log('[PWA Signaling] Cleanup - removing listeners');
         this.socket?.off('connect', handleConnect);
         this.socket?.off('connect_error', handleConnectError);
@@ -72,9 +95,10 @@ export class SignalingClient {
       };
 
       this.socket = io(this.url, {
-        transports: ['polling', 'websocket'], // start with polling to survive CF/Render websocket quirks
+        transports: ['polling', 'websocket'],
         upgrade: true,
         forceNew: true,
+        timeout: 50000,
       });
 
       this.socket.on('connect', handleConnect);
@@ -83,6 +107,7 @@ export class SignalingClient {
       this.socket.on('room-full', handleRoomFull);
       this.socket.on('room-expired', handleRoomExpired);
       this.socket.on('room-not-found', handleRoomNotFound);
+
       this.socket.on('signal', (payload: SignalPayload) => {
         this.signalHandlers.forEach((handler) => handler(payload));
       });

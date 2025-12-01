@@ -11,7 +11,7 @@ import { WebRTCReceiver } from '../webrtc/peer.js';
 
 async function prewarm(url: string, verbose?: boolean) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4000);
+  const timer = setTimeout(() => controller.abort(), 50000);
   try {
     const res = await fetch(`${url}/health`, { signal: controller.signal });
     if (res.ok && verbose) {
@@ -42,7 +42,7 @@ function handleTextReception(receiver: WebRTCReceiver) {
     if (content === 'EOF') {
       receiver.sendAck();
       // eslint-disable-next-line no-console
-      console.log(chalk.green(text));
+      console.log(chalk.green(`\n${text}`));
       receiver.close();
     } else {
       text += content;
@@ -54,24 +54,46 @@ function handleFileReception(receiver: WebRTCReceiver, metadata: Metadata, targe
   const filename = metadata.filename || `pinq-${Date.now()}`;
   const { filepath, stream } = createWriteStream(targetDir, filename);
   const total = metadata.size ?? 0;
-  const progressBar = total > 0 ? createProgressBar(total) : undefined;
+  const progressBar = total > 1024 * 1024 ? createProgressBar(total) : undefined;
+
+  let receivedBytes = 0;
 
   receiver.on('data', (chunk) => {
     const content = chunk.toString();
     if (content === 'EOF') {
-      progressBar?.stop();
-      stream.end();
-      receiver.sendAck();
-      // eslint-disable-next-line no-console
-      console.log(chalk.green(`✓ Saved: ${filepath}`));
-      receiver.close();
+      if (progressBar) {
+        progressBar.stop();
+      }
+      stream.end(() => {
+        receiver.sendAck();
+        // eslint-disable-next-line no-console
+        console.log(chalk.green(`✓ Saved: ${filepath}`));
+        receiver.close();
+      });
       return;
     }
 
-    stream.write(chunk);
+    const success = stream.write(chunk);
+    receivedBytes += chunk.length;
+
     if (progressBar) {
       progressBar.increment(chunk.length);
     }
+
+    if (!success) {
+      stream.once('drain', () => {
+        // resume once drained
+      });
+    }
+  });
+
+  stream.on('error', (err) => {
+    // eslint-disable-next-line no-console
+    console.error(chalk.red(`✖ File write error: ${err.message}`));
+    if (progressBar) {
+      progressBar.stop();
+    }
+    receiver.close();
   });
 }
 
@@ -83,22 +105,22 @@ export async function receiveCommand(code: string, options: ReceiveOptions) {
   receiver.once('close', () => signaling.disconnect());
   receiver.once('error', () => signaling.disconnect());
 
-  const connectSpinner = createSpinner('Connecting to signaling server...', options.verbose);
+  const connectSpinner = createSpinner('Пробуждение сервера и подключение...', options.verbose);
   try {
     await prewarm(SIGNALING_URL, options.verbose);
     await signaling.join(normalizedCode);
-    connectSpinner.succeed('Joined signaling room');
+    connectSpinner.succeed('Подключились к серверу, ожидаем телефон...');
   } catch (err) {
     connectSpinner.fail((err as Error).message);
     signaling.disconnect();
     throw err;
   }
 
-  const peerSpinner = createSpinner('Waiting for peer connection...', options.verbose);
+  const peerSpinner = createSpinner('Ожидание подключения телефона...', options.verbose);
   try {
     await receiver.start();
     const metadata = await receiver.waitForMetadata();
-    peerSpinner.succeed('Peer connected');
+    peerSpinner.succeed('Телефон подключен');
 
     if (metadata.type === 'file') {
       if (options.confirm) {
