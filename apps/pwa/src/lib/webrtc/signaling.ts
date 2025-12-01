@@ -13,8 +13,34 @@ export class SignalingClient {
 
   private readonly peerJoinedHandlers = new Set<PeerJoinedHandler>();
 
+  private static ackGuarded = false;
+
   constructor(private url: string, code: string) {
+    SignalingClient.guardSocketAckRegistration();
     this.code = code.trim().toUpperCase();
+  }
+
+  private static guardSocketAckRegistration() {
+    if (SignalingClient.ackGuarded) return;
+
+    const socketCtor = (io as unknown as { Socket?: { prototype?: unknown } }).Socket;
+    const proto = socketCtor?.prototype as {
+      _registerAckCallback?: (id: number, ack?: (...args: unknown[]) => void) => void;
+    };
+
+    const originalRegisterAck = proto?._registerAckCallback;
+    if (!proto || !originalRegisterAck) return;
+
+    proto._registerAckCallback = function registerAckCallbackGuard(
+      this: unknown,
+      id: number,
+      ack?: (...args: unknown[]) => void,
+    ) {
+      if (typeof ack !== 'function') return;
+      return originalRegisterAck.call(this, id, ack);
+    };
+
+    SignalingClient.ackGuarded = true;
   }
 
   async prewarm(): Promise<void> {
