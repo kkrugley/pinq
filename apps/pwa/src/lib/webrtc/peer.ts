@@ -180,7 +180,7 @@ export class WebRTCSender {
 
       const handleData = (data: Uint8Array | string) => {
         const payload = typeof data === 'string' ? data : new TextDecoder().decode(data);
-        if (payload === ACK_MARKER) {
+        if (payload === ACK_MARKER || payload === 'ACK') {
           cleanup();
           resolve();
         }

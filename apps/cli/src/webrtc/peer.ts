@@ -229,6 +229,8 @@ export class WebRTCReceiver extends EventEmitter {
   sendAck() {
     if (this.peer && this.peer.connected) {
       this.peer.send(ACK_MARKER);
+      // Also send legacy marker for backward compatibility with older PWA builds
+      this.peer.send('ACK');
     }
   }
 

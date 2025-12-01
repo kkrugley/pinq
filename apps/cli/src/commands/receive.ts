@@ -12,6 +12,7 @@ import { WebRTCReceiver } from '../webrtc/peer.js';
 
 const ACK_LINGER_MS = 800;
 const EOF_BUFFER = Buffer.from(EOF_MARKER);
+const LEGACY_EOF_BUFFER = Buffer.from('EOF');
 
 async function prewarm(url: string, verbose?: boolean) {
   const controller = new AbortController();
@@ -81,15 +82,19 @@ function handleTextReception(receiver: WebRTCReceiver) {
     };
 
     const onData = (chunk: Buffer | string) => {
-      const content =
+      const isEof =
         typeof chunk === 'string'
-          ? chunk
-          : chunk.equals(EOF_BUFFER)
-            ? EOF_MARKER
-            : chunk.toString();
-      if (content === EOF_MARKER) {
+          ? chunk === EOF_MARKER || chunk === 'EOF'
+          : chunk.equals(EOF_BUFFER) || chunk.equals(LEGACY_EOF_BUFFER);
+      if (isEof) {
         complete();
       } else {
+        const content =
+          typeof chunk === 'string'
+            ? chunk
+            : chunk.equals(EOF_BUFFER) || chunk.equals(LEGACY_EOF_BUFFER)
+              ? ''
+              : chunk.toString();
         text += content;
       }
     };
@@ -137,7 +142,9 @@ function handleFileReception(receiver: WebRTCReceiver, metadata: Metadata, targe
 
     const onData = (chunk: Buffer | string) => {
       const isEof =
-        typeof chunk === 'string' ? chunk === EOF_MARKER : (chunk as Buffer).equals(EOF_BUFFER);
+        typeof chunk === 'string'
+          ? chunk === EOF_MARKER || chunk === 'EOF'
+          : (chunk as Buffer).equals(EOF_BUFFER) || (chunk as Buffer).equals(LEGACY_EOF_BUFFER);
       if (isEof) {
         finished = true;
         if (progressBar) {
