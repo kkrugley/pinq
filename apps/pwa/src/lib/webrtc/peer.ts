@@ -1,11 +1,11 @@
-import SimplePeer, { type SignalData } from 'simple-peer';
+import SimplePeer, { type SignalData, type SimplePeerInstance } from 'simple-peer';
 import { ICE_SERVERS } from '@pinq/shared';
 import type { Metadata } from '../types';
 import { chunkFile, chunkText, CHUNK_SIZE } from '../utils/fileChunker';
 import { SignalingClient } from './signaling';
 
 export class WebRTCSender {
-  private peer: SimplePeer.Instance | null = null;
+  private peer: SimplePeerInstance | null = null;
 
   private signaling: SignalingClient;
 
@@ -46,7 +46,7 @@ export class WebRTCSender {
       // eslint-disable-next-line no-console
       console.log('[PWA] ❌ WebRTC closed');
     });
-    peer.on('error', (err) => {
+    peer.on('error', (err: Error) => {
       // eslint-disable-next-line no-console
       console.error('[PWA] ❌ Peer error:', err);
     });
@@ -84,7 +84,7 @@ export class WebRTCSender {
             resolve();
           });
 
-          peer.once('error', (err) => {
+          peer.once('error', (err: Error) => {
             clearTimeout(timer);
             reject(err);
           });
