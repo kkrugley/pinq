@@ -50,7 +50,7 @@ Run these from the repository root:
   ```
 - **CLI (build + watch):**
   ```bash
-  pnpm --filter cli dev
+  pnpm --filter pinq-cli dev
   ```
 - **Lint all packages:**
   ```bash
