@@ -1,5 +1,5 @@
 {
-  "name": "pinq-cli",
+  "name": "pinq",
   "version": "0.1.0",
   "description": "Pair-In Quick CLI for receiving files and text via WebRTC",
   "type": "module",

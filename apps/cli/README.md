@@ -1,4 +1,4 @@
-# pinq-cli
+# pinq
 
 Pair-In Quick CLI for receiving text and files from the mobile PWA via WebRTC DataChannels.
 
@@ -6,10 +6,10 @@ Pair-In Quick CLI for receiving text and files from the mobile PWA via WebRTC Da
 
 ```bash
 # if published to npm
-pnpm install -g pinq-cli
+pnpm install -g pinq
 
 # or run from this repo without installing globally
-pnpm --filter pinq-cli build
+pnpm --filter pinq build
 node apps/cli/dist/index.js receive ABC123
 ```
 
@@ -49,8 +49,8 @@ pinq receive ABC123 --verbose
 
 ```bash
 pnpm install
-pnpm --filter pinq-cli build   # compile to dist/
-pnpm --filter pinq-cli test    # run Node.js tests (@roamhq/wrtc required)
+pnpm --filter pinq build   # compile to dist/
+pnpm --filter pinq test    # run Node.js tests (@roamhq/wrtc required)
 ```
 
 ## Publishing
@@ -58,7 +58,7 @@ To publish a new version to npm:
 1. Bump the version in `package.json`.
 2. Build the CLI:
    ```bash
-   pnpm --filter pinq-cli build
+   pnpm --filter pinq build
    ```
 3. Publish:
    ```bash

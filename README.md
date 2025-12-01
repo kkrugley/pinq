@@ -52,7 +52,7 @@ Run these from the repository root:
   ```
 - **CLI (build + watch):**
   ```bash
-  pnpm --filter pinq-cli dev
+  pnpm --filter pinq dev
   ```
 - **Lint all packages:**
   ```bash
@@ -65,7 +65,7 @@ Run these from the repository root:
 
 ## Basic Usage
 1. Start the signaling server (locally or use the Render URL).
-2. Install the CLI globally (or run via `pnpm --filter pinq-cli build && node apps/cli/dist/index.js`).
+2. Install the CLI globally (or run via `pnpm --filter pinq build && node apps/cli/dist/index.js`).
 3. Run the CLI on your computer with the pairing code from the PWA:
    ```bash
    pinq receive ABC123
@@ -94,7 +94,7 @@ Run these from the repository root:
   pnpm publish --access public
   ```
 - **Homebrew tap:** create a `homebrew-tap` repo with a `Formula/pinq.rb` that pulls the npm tarball, then `brew tap <user>/tap && brew install pinq`.
-- **Winget:** fork `microsoft/winget-pkgs`, add a manifest under `manifests/p/pinq/pinq-cli/`, and open a PR pointing to the npm tarball or a portable build.
+- **Winget:** fork `microsoft/winget-pkgs`, add a manifest under `manifests/p/pinq/pinq/`, and open a PR pointing to the npm tarball or a portable build.
 
 ## Configuration
 Update signaling endpoints in client code as needed:
