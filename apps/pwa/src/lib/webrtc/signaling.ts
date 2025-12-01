@@ -2,6 +2,7 @@ import { io, type Socket } from 'socket.io-client';
 import type { SignalPayload } from '../types';
 
 type SignalHandler = (payload: SignalPayload) => void;
+type PeerJoinedHandler = (payload: { peerId: string; code: string }) => void;
 
 export class SignalingClient {
   private socket: Socket | null = null;
@@ -9,6 +10,8 @@ export class SignalingClient {
   private readonly code: string;
 
   private readonly signalHandlers = new Set<SignalHandler>();
+
+  private readonly peerJoinedHandlers = new Set<PeerJoinedHandler>();
 
   constructor(private url: string, code: string) {
     this.code = code.trim().toUpperCase();
@@ -111,12 +114,21 @@ export class SignalingClient {
       this.socket.on('signal', (payload: SignalPayload) => {
         this.signalHandlers.forEach((handler) => handler(payload));
       });
+
+      this.socket.on('peer-joined', (payload: { peerId: string; code: string }) => {
+        this.peerJoinedHandlers.forEach((handler) => handler(payload));
+      });
     });
   }
 
   onSignal(handler: SignalHandler) {
     this.signalHandlers.add(handler);
     return () => this.signalHandlers.delete(handler);
+  }
+
+  onPeerJoined(handler: PeerJoinedHandler) {
+    this.peerJoinedHandlers.add(handler);
+    return () => this.peerJoinedHandlers.delete(handler);
   }
 
   sendSignal(signal: unknown) {

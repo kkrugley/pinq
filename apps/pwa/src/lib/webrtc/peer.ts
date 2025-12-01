@@ -13,6 +13,8 @@ export class WebRTCSender {
 
   private cleanupSignalHandler: (() => void) | null = null;
 
+  private cleanupPeerJoinedHandler: (() => void) | null = null;
+
   constructor(signalingUrl: string, private code: string) {
     this.signaling = new SignalingClient(signalingUrl, code);
   }
@@ -33,11 +35,7 @@ export class WebRTCSender {
     // eslint-disable-next-line no-console
     console.log('[PWA] Creating SimplePeer as initiator');
 
-    peer.on('signal', (data: SignalData) => {
-      // eslint-disable-next-line no-console
-      console.log('[PWA] Sending signal:', (data as { type?: string }).type || 'candidate');
-      this.signaling.sendSignal(data);
-    });
+    this.attachSignalHandler(peer);
     peer.on('connect', () => {
       // eslint-disable-next-line no-console
       console.log('[PWA] ✅ WebRTC connected!');
@@ -54,6 +52,17 @@ export class WebRTCSender {
     return peer;
   }
 
+  private attachSignalHandler(peer: SimplePeerInstance) {
+    this.cleanupSignalHandler?.();
+    this.cleanupSignalHandler = this.signaling.onSignal((payload) => peer.signal(payload.signal));
+
+    peer.on('signal', (data: SignalData) => {
+      // eslint-disable-next-line no-console
+      console.log('[PWA] Sending signal:', (data as { type?: string }).type || 'candidate');
+      this.signaling.sendSignal(data);
+    });
+  }
+
   async connect(onStatus?: (status: string) => void, timeoutMs = 60000): Promise<void> {
     if (!this.connectionPromise) {
       this.connectionPromise = (async () => {
@@ -66,28 +75,60 @@ export class WebRTCSender {
         console.log('[PWA] Joined room with code:', this.code);
 
         onStatus?.('Создание WebRTC соединения...');
-        const peer = this.createPeer();
-
-        this.cleanupSignalHandler = this.signaling.onSignal((payload) =>
-          peer.signal(payload.signal),
-        );
-
-        onStatus?.('Ожидание компьютера...');
-
         await new Promise<void>((resolve, reject) => {
-          const timer = setTimeout(() => {
-            reject(new Error('Не удалось дождаться подключения компьютера'));
-          }, timeoutMs);
+          let peer: SimplePeerInstance;
+          let cleanupConnection: (() => void) | null = null;
 
-          peer.once('connect', () => {
-            clearTimeout(timer);
-            resolve();
+          const cleanupAll = () => {
+            cleanupConnection?.();
+            this.cleanupPeerJoinedHandler?.();
+            this.cleanupPeerJoinedHandler = null;
+          };
+
+          const startConnectionAttempt = () => {
+            cleanupConnection?.();
+            this.peer?.destroy();
+            peer = this.createPeer();
+
+            const timer = setTimeout(() => {
+              cleanupAll();
+              reject(new Error('Не удалось дождаться подключения компьютера'));
+            }, timeoutMs);
+
+            const handleConnect = () => {
+              cleanupAll();
+              resolve();
+            };
+
+            const handleError = (err: Error) => {
+              cleanupAll();
+              reject(err);
+            };
+
+            const handleClose = () => {
+              cleanupAll();
+              reject(new Error('Соединение закрыто до установления'));
+            };
+
+            cleanupConnection = () => {
+              clearTimeout(timer);
+              peer.off?.('connect', handleConnect);
+              peer.off?.('error', handleError);
+              peer.off?.('close', handleClose);
+            };
+
+            peer.once('connect', handleConnect);
+            peer.once('error', handleError);
+            peer.once('close', handleClose);
+          };
+
+          this.cleanupPeerJoinedHandler = this.signaling.onPeerJoined(() => {
+            if (this.peer?.connected) return;
+            startConnectionAttempt();
           });
 
-          peer.once('error', (err: Error) => {
-            clearTimeout(timer);
-            reject(err);
-          });
+          startConnectionAttempt();
+          onStatus?.('Ожидание компьютера...');
         });
       })();
     }
@@ -131,9 +172,9 @@ export class WebRTCSender {
 
       const cleanup = () => {
         clearTimeout(timer);
-        peer.off('data', handleData);
-        peer.off('error', handleError);
-        peer.off('close', handleClose);
+        peer.off?.('data', handleData);
+        peer.off?.('error', handleError);
+        peer.off?.('close', handleClose);
       };
 
       peer.on('data', handleData);
@@ -196,6 +237,7 @@ export class WebRTCSender {
 
   destroy() {
     this.cleanupSignalHandler?.();
+    this.cleanupPeerJoinedHandler?.();
     this.peer?.destroy();
     this.peer = null;
     this.signaling.disconnect();
