@@ -5,15 +5,13 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const bufferPath = resolve(
-  __dirname,
-  '../../node_modules/.pnpm/buffer@6.0.3/node_modules/buffer/index.js',
-);
-
 export default defineConfig({
   resolve: {
     alias: {
-      buffer: bufferPath,
+      buffer: resolve(
+        __dirname,
+        '../../node_modules/.pnpm/buffer@6.0.3/node_modules/buffer/index.js',
+      ),
       events: resolve(__dirname, 'src/lib/polyfills/events.ts'),
     },
   },
