@@ -33,8 +33,16 @@ const ensureGlobal = () => {
   }
 };
 
+const ensureChromeShim = () => {
+  if (typeof (globalThis as typeof globalThis & { chrome?: unknown }).chrome === 'undefined') {
+    // Some dependencies do a loose feature check for browser extensions; stub to avoid ReferenceErrors.
+    (globalThis as typeof globalThis & { chrome?: unknown }).chrome = {};
+  }
+};
+
 ensureGlobal();
 ensureProcess();
 ensureBuffer();
+ensureChromeShim();
 
 export {};

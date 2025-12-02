@@ -5,6 +5,7 @@ type SignalHandler = (payload: SignalPayload) => void;
 type PeerJoinedHandler = (payload: { peerId: string; code: string }) => void;
 
 const DEFAULT_SIGNALING_TIMEOUT_MS = 90_000;
+type SignalingRole = 'creator' | 'guest';
 const PREWARM_TIMEOUT_MS = 70_000;
 
 export class SignalingClient {
@@ -70,10 +71,11 @@ export class SignalingClient {
     }
   }
 
-  async connect(timeoutMs = DEFAULT_SIGNALING_TIMEOUT_MS): Promise<void> {
+  async connect(options: { timeoutMs?: number; role?: SignalingRole } = {}): Promise<void> {
     if (this.socket?.connected) return;
 
-    const effectiveTimeout = timeoutMs ?? DEFAULT_SIGNALING_TIMEOUT_MS;
+    const effectiveTimeout = options.timeoutMs ?? DEFAULT_SIGNALING_TIMEOUT_MS;
+    const role: SignalingRole = options.role ?? 'creator';
 
     await new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -84,7 +86,7 @@ export class SignalingClient {
       const handleConnect = () => {
         // eslint-disable-next-line no-console
         console.log('[PWA Signaling] Connected, joining room');
-        this.socket?.emit('join-room', { code: this.code, role: 'creator' });
+        this.socket?.emit('join-room', { code: this.code, role });
       };
 
       const handleJoined = (payload: { code: string }) => {

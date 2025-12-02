@@ -20,8 +20,11 @@ function parseAllowedOrigins(raw?: string | string[]) {
     'http://127.0.0.1:5173',
     'http://localhost:4173',
     'http://127.0.0.1:4173',
+    'http://0.0.0.0:5173',
+    'http://0.0.0.0:4173',
     'http://127.0.0.1:10808',
     'https://pinq.vercel.app',
+    'https://pinq-dev.vercel.app',
     'https://pinq.app',
   ];
 
