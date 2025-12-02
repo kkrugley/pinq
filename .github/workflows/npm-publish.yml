@@ -1,0 +1,35 @@
+name: publish-cli
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/cli
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - run: pnpm --filter pinq-cli build
+        working-directory: .
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm publish --access public
