@@ -7,6 +7,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   
+    environment: npm-publish   
     defaults:
       run:
         working-directory: apps/cli
@@ -20,8 +24,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: https://registry.npmjs.org/
+          registry-url: https://registry.npmjs.org
           cache: 'pnpm'
+          provenance: true     
 
       - run: pnpm install --frozen-lockfile
         working-directory: .
@@ -29,7 +34,5 @@ jobs:
       - run: pnpm --filter pinq-cli build
         working-directory: .
 
-      - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to npm via OIDC
         run: pnpm publish --access public
