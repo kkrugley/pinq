@@ -4,7 +4,7 @@ import type { Metadata, ReceivedPayload } from '../types';
 import { chunkFile, chunkText, CHUNK_SIZE } from '../utils/fileChunker';
 import { SignalingClient } from './signaling';
 
-const CONNECT_TIMEOUT_MS = 90_000;
+const CONNECT_TIMEOUT_MS = 120_000;
 const ACK_TIMEOUT_MS = 45_000; // allow extra time for large files before considering it a failure
 const ACK_LINGER_MS = 800;
 const METADATA_TIMEOUT_MS = 5 * 60 * 1000;
@@ -56,10 +56,13 @@ export class WebRTCSender {
     const peer = new SimplePeer({
       initiator: true,
       trickle: true,
+      allowHalfTrickle: true,
       wrtc: undefined,
       config: {
         iceServers: ICE_SERVERS,
+        iceCandidatePoolSize: 16,
       },
+      channelConfig: { maxPacketLifeTime: 3000 },
     });
     // eslint-disable-next-line no-console
     console.log('[PWA] Creating SimplePeer as initiator');
@@ -68,6 +71,10 @@ export class WebRTCSender {
     peer.on('connect', () => {
       // eslint-disable-next-line no-console
       console.log('[PWA] ✅ WebRTC connected!');
+    });
+    peer.on('iceStateChange', (state: string) => {
+      // eslint-disable-next-line no-console
+      console.log('[PWA] ICE state (sender):', state);
     });
     peer.on('close', () => {
       this.cleanupSignalHandler?.();
@@ -325,6 +332,7 @@ export class WebRTCReceiver {
       wrtc: undefined,
       config: {
         iceServers: ICE_SERVERS,
+        iceCandidatePoolSize: 16,
       },
       allowHalfTrickle: true,
       channelConfig: { maxPacketLifeTime: 3000 },
@@ -362,6 +370,10 @@ export class WebRTCReceiver {
       // eslint-disable-next-line no-console
       console.log('[PWA] ✅ WebRTC connected (receiver)');
     });
+    peer.on('iceStateChange', (state: string) => {
+      // eslint-disable-next-line no-console
+      console.log('[PWA] ICE state (receiver):', state);
+    });
     peer.on('close', () => {
       // eslint-disable-next-line no-console
       console.log('[PWA] WebRTC closed');
@@ -398,20 +410,23 @@ export class WebRTCReceiver {
   }
 
   private waitForOffer(timeoutMs: number) {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<{ offer: SignalData; candidates: SignalData[] }>((resolve, reject) => {
       const timer = setTimeout(() => {
         cleanup();
         reject(new Error('Did not receive offer from sender'));
       }, timeoutMs);
 
       let cleanupSignalWatcher: (() => void) | undefined;
+      const candidates: SignalData[] = [];
 
       const handleSignal = (payload: { signal: SignalData }) => {
         const sig = payload.signal as { type?: string };
         if (sig?.type === 'offer') {
           cleanup();
-          resolve();
+          resolve({ offer: payload.signal, candidates: [...candidates] });
+          return;
         }
+        candidates.push(payload.signal);
       };
 
       const cleanup = () => {
@@ -482,10 +497,15 @@ export class WebRTCReceiver {
           .then(() => onStatus?.('Sender connected. Preparing transfer...'))
           .catch(() => {});
 
+        onStatus?.('Waiting for offer...');
+        const { offer, candidates } = await this.waitForOffer(timeoutMs);
+
+        onStatus?.('Creating WebRTC connection...');
         this.createPeer();
 
-        onStatus?.('Waiting for offer...');
-        await this.waitForOffer(timeoutMs);
+        const peer = this.getPeerOrThrow();
+        peer.signal(offer);
+        candidates.forEach((candidate) => peer.signal(candidate));
 
         onStatus?.('Negotiating connection...');
         await this.waitForConnection(timeoutMs);
