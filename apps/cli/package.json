@@ -1,5 +1,5 @@
 {
-  "name": "pinq",
+  "name": "pinq-cli",
   "version": "0.1.0",
   "description": "Pair-In Quick CLI for receiving files and text via WebRTC",
   "type": "module",
@@ -31,8 +31,7 @@
     "commander": "^11.0.0",
     "ora": "^7.0.0",
     "simple-peer": "^9.11.1",
-    "socket.io-client": "^4.7.0",
-    "@pinq/shared": "workspace:*"
+    "socket.io-client": "^4.7.0"
   },
   "devDependencies": {
     "@types/node": "^22.5.3",

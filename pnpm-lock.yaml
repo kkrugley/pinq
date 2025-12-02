@@ -17,9 +17,6 @@ importers:
 
   apps/cli:
     dependencies:
-      '@pinq/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@roamhq/wrtc':
         specifier: ^0.9.1
         version: 0.9.1

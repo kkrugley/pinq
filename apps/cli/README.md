@@ -5,11 +5,11 @@ Pair-In Quick CLI for receiving text and files from the mobile PWA via WebRTC Da
 ## Installation
 
 ```bash
-# if published to npm
-pnpm install -g pinq
+# Install from npm (global)
+npm i -g pinq-cli
 
 # or run from this repo without installing globally
-pnpm --filter pinq build
+pnpm --filter pinq-cli build
 node apps/cli/dist/index.js receive ABC123
 ```
 
@@ -49,26 +49,6 @@ pinq receive ABC123 --verbose
 
 ```bash
 pnpm install
-pnpm --filter pinq build   # compile to dist/
-pnpm --filter pinq test    # run Node.js tests (@roamhq/wrtc required)
+pnpm --filter pinq-cli build   # compile to dist/
+pnpm --filter pinq-cli test    # run Node.js tests (@roamhq/wrtc required)
 ```
-
-## Publishing
-To publish a new version to npm:
-1. Bump the version in `package.json`.
-2. Build the CLI:
-   ```bash
-   pnpm --filter pinq build
-   ```
-3. Publish:
-   ```bash
-   cd apps/cli
-   pnpm publish --access public
-   ```
-For Homebrew/Winget, point installers at the npm tarball produced by the publish step.
-
-## Protocol
-- Uses Socket.io for signaling with 6-character pairing codes (TTL ~5 minutes)
-- First DataChannel message carries metadata (`text` or `file` descriptors)
-- Subsequent messages are 16 KB chunks, terminated by `EOF`
-- Desktop sends `ACK` after successfully writing/printing the payload

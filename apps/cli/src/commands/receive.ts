@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import path from 'path';
 import readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
-import { ACK_MARKER, EOF_MARKER } from '@pinq/shared';
+import { ACK_MARKER, EOF_MARKER } from '../shared/constants.js';
 import { DEFAULT_DOWNLOAD_DIR, SIGNALING_URL } from '../config.js';
 import { Metadata, ReceiveOptions } from '../types.js';
 import { createProgressBar, createSpinner, formatBytes } from '../utils/display.js';

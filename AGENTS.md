@@ -56,7 +56,7 @@ pinq/
 ## Deployment
 - **Render (signaling):** use `render.yaml`; start command `node dist/index.js`; expose `/health`. Set `ALLOWED_ORIGIN` to PWA domains.
 - **Vercel (PWA):** project root `apps/pwa`, build `pnpm build`, output `dist`, env `VITE_SIGNALING_URL`.
-- **CLI publishing:** npm package `pinq`; Homebrew tap and Winget manifest optional.
+- **CLI publishing:** npm package `pinq-cli`; Homebrew tap and Winget manifest optional.
 
 ## Testing Checklist
 - Text send PWA → CLI displays.

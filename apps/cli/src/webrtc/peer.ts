@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import SimplePeer, { SignalData } from 'simple-peer';
 import wrtc from '@roamhq/wrtc';
-import { ACK_MARKER, ICE_SERVERS } from '@pinq/shared';
+import { ACK_MARKER, ICE_SERVERS } from '../shared/constants.js';
 import { Metadata } from '../types.js';
 import { SignalingClient } from './signaling.js';
 

@@ -32,12 +32,26 @@ npm install -g pnpm
 ```
 
 ## Installation
-Clone the repository and install workspace dependencies with pnpm:
+
 ```bash
-git clone https://github.com/kkrugley/pinq.git
-cd pinq
-pnpm install
+# Install from npm (global)
+npm i -g pinq-cli
+
+# or run from this repo without installing globally
+pnpm --filter pinq-cli build
+node apps/cli/dist/index.js receive ABC123
 ```
+
+## Basic Usage
+1. Start the signaling server (locally or use the Render URL).
+2. Install the CLI globally (or run via `pnpm --filter pinq-cli build && node apps/cli/dist/index.js`).
+3. Run the CLI on your computer with the pairing code from the PWA:
+   ```bash
+   pinq receive ABC123
+   ```
+4. Open the PWA on your phone (local dev server or deployed URL). The PWA will pre-warm the signaling server while you enter the code.
+5. Enter/select a pairing code, choose text or a file (<50 MB), and send.
+6. The CLI displays text in the terminal and saves files to `~/Downloads` with progress for larger payloads.
 
 ## Development Scripts
 Run these from the repository root:
@@ -52,7 +66,7 @@ Run these from the repository root:
   ```
 - **CLI (build + watch):**
   ```bash
-  pnpm --filter pinq dev
+  pnpm --filter pinq-cli dev
   ```
 - **Lint all packages:**
   ```bash
@@ -62,17 +76,6 @@ Run these from the repository root:
   ```bash
   pnpm typecheck
   ```
-
-## Basic Usage
-1. Start the signaling server (locally or use the Render URL).
-2. Install the CLI globally (or run via `pnpm --filter pinq build && node apps/cli/dist/index.js`).
-3. Run the CLI on your computer with the pairing code from the PWA:
-   ```bash
-   pinq receive ABC123
-   ```
-4. Open the PWA on your phone (local dev server or deployed URL). The PWA will pre-warm the signaling server while you enter the code.
-5. Enter/select a pairing code, choose text or a file (<50 MB), and send.
-6. The CLI displays text in the terminal and saves files to `~/Downloads` with progress for larger payloads.
 
 ## Deployment
 ### Signaling Server on Render
@@ -94,7 +97,7 @@ Run these from the repository root:
   pnpm publish --access public
   ```
 - **Homebrew tap:** create a `homebrew-tap` repo with a `Formula/pinq.rb` that pulls the npm tarball, then `brew tap <user>/tap && brew install pinq`.
-- **Winget:** fork `microsoft/winget-pkgs`, add a manifest under `manifests/p/pinq/pinq/`, and open a PR pointing to the npm tarball or a portable build.
+- **Winget:** fork `microsoft/winget-pkgs`, add a manifest under `manifests/p/pinq/pinq-cli/`, and open a PR pointing to the npm tarball or a portable build.
 
 ## Configuration
 Update signaling endpoints in client code as needed:
