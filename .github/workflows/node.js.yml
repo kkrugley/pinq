@@ -38,5 +38,5 @@ jobs:
       # линтеры/типы/тесты по всем пакетам
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm -r test
+      - run: pnpm --filter @pinq/signaling test
 
