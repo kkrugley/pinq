@@ -24,6 +24,13 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        banner: 'globalThis.chrome = globalThis.chrome || {};',
+      },
+    },
+  },
   plugins: [
     svelte(),
     VitePWA({
