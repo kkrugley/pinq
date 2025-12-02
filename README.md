@@ -1,13 +1,16 @@
+[![Node.js CI](https://github.com/kkrugley/pinq/actions/workflows/node.js.yml/badge.svg)](https://github.com/kkrugley/pinq/actions/workflows/node.js.yml)
+[![npm version](https://img.shields.io/npm/v/pinq-cli.svg?color=blue)](https://www.npmjs.com/package/pinq-cli)
+[![License](https://img.shields.io/github/license/kkrugley/pinq.svg?color=red)](LICENSE)
+
 # Pair-In Quick (pinq)
 
 Pair-In Quick is a peer-to-peer (P2P) data transfer tool that makes it easy to send files or text from a phone to a computer without using cloud storage. It pairs a Progressive Web App (PWA) on your phone with a command-line interface (CLI) on your computer through a lightweight signaling server.
 
 ## Goals
-- Enable fast, private transfers between phone and desktop using WebRTC DataChannels.
+- Enable fast, private transfers between phone and desktop using WebRTC.
 - Keep the experience simple: share a short pairing code, then send/receive immediately.
 - Avoid storing payloads on servers—only exchange signaling data for secure, direct connections.
 - Ship a consistent, TypeScript-first monorepo for the signaling server, CLI, and PWA.
-- Be resilient to Render cold starts with aggressive pre-warming and longer (90s) signaling timeouts.
 
 ## Architecture Overview
 Pair-In Quick is organized as a pnpm workspace with three core apps:
