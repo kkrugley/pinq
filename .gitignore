@@ -21,3 +21,4 @@ logs
 # Misc
 *.patch
 patch.txt
+*af~lock~
