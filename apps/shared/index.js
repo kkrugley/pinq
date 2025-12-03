@@ -7,6 +7,11 @@ export const ICE_SERVERS = [
     username: 'openrelayproject',
     credential: 'openrelayproject',
   },
+  {
+    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+    username: 'openrelayproject',
+    credential: 'openrelayproject',
+  },
 ];
 
 export const CONTROL_PREFIX = '__PINQ_CTRL__';

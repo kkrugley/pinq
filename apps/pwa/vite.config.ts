@@ -13,10 +13,23 @@ export default defineConfig({
         '../../node_modules/.pnpm/buffer@6.0.3/node_modules/buffer/index.js',
       ),
       events: resolve(__dirname, 'src/lib/polyfills/events.ts'),
+      util: resolve(__dirname, 'src/lib/polyfills/util.ts'),
     },
   },
   optimizeDeps: {
-    include: ['buffer', 'events'],
+    include: ['buffer', 'events', 'util'],
+    esbuildOptions: {
+      banner: {
+        js: 'globalThis.chrome = globalThis.chrome || {};',
+      },
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        banner: 'globalThis.chrome = globalThis.chrome || {};',
+      },
+    },
   },
   plugins: [
     svelte(),

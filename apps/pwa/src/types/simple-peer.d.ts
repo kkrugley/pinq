@@ -17,11 +17,13 @@ declare module 'simple-peer' {
     destroy(err?: Error): void;
     on(event: 'signal', cb: (data: SignalData) => void): this;
     on(event: 'connect', cb: () => void): this;
+    on(event: 'iceStateChange', cb: (state: RTCIceConnectionState) => void): this;
     on(event: 'data', cb: (chunk: any) => void): this;
     on(event: 'close', cb: () => void): this;
     on(event: 'error', cb: (err: Error) => void): this;
     once(event: 'signal', cb: (data: SignalData) => void): this;
     once(event: 'connect', cb: () => void): this;
+    once(event: 'iceStateChange', cb: (state: RTCIceConnectionState) => void): this;
     once(event: 'data', cb: (chunk: any) => void): this;
     once(event: 'close', cb: () => void): this;
     once(event: 'error', cb: (err: Error) => void): this;
@@ -37,11 +39,13 @@ declare module 'simple-peer' {
     destroy(err?: Error): void;
     on(event: 'signal', cb: (data: SignalData) => void): this;
     on(event: 'connect', cb: () => void): this;
+    on(event: 'iceStateChange', cb: (state: RTCIceConnectionState) => void): this;
     on(event: 'data', cb: (chunk: any) => void): this;
     on(event: 'close', cb: () => void): this;
     on(event: 'error', cb: (err: Error) => void): this;
     once(event: 'signal', cb: (data: SignalData) => void): this;
     once(event: 'connect', cb: () => void): this;
+    once(event: 'iceStateChange', cb: (state: RTCIceConnectionState) => void): this;
     once(event: 'data', cb: (chunk: any) => void): this;
     once(event: 'close', cb: () => void): this;
     once(event: 'error', cb: (err: Error) => void): this;
