@@ -356,9 +356,12 @@
           </div>
 
           <div class="space-y-2">
-            <label class="text-xs uppercase tracking-wide text-slate-400">Enter code from another device</label>
+            <label for="join-code-input" class="text-xs uppercase tracking-wide text-slate-400">
+              Enter code from another device
+            </label>
             <div class="flex flex-col sm:flex-row gap-3">
               <input
+                id="join-code-input"
                 class="flex-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60 disabled:cursor-not-allowed"
                 bind:value={joinCode}
                 on:input={handleJoinCodeInput}
